@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="io.github.airbattery.gnome" path="/io/github/airbattery/gnome/">
+    <key name="show-percentage" type="b">
+      <default>true</default>
+      <summary>Show a compact percentage in the top bar</summary>
+      <description>Show the selected device aggregate value, or the lower fresh earbud value.</description>
+    </key>
+    <key name="preferred-device-id" type="s">
+      <default>''</default>
+      <summary>Preferred privacy-safe device identifier</summary>
+      <description>An AirBattery-generated identifier selected from the top-bar device menu.</description>
+    </key>
+  </schema>
+</schemalist>

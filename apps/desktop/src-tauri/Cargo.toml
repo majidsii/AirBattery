@@ -1,0 +1,53 @@
+[package]
+name = "airbattery-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+build = "build.rs"
+
+[lib]
+name = "airbattery_desktop"
+path = "src/lib.rs"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "airbattery"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[build-dependencies]
+tauri-build = { version = "=2.6.3", features = [] }
+
+[dependencies]
+airbattery-core = { path = "../../../crates/airbattery-core" }
+airbattery-service = { path = "../../../crates/airbattery-service" }
+airbattery-settings = { path = "../../../crates/airbattery-settings" }
+diagnostics = { path = "../../../crates/diagnostics" }
+device-protocols = { path = "../../../crates/device-protocols" }
+protocol-airpods = { path = "../../../crates/protocol-airpods" }
+protocol-generic-battery = { path = "../../../crates/protocol-generic-battery" }
+shared-models = { path = "../../../crates/shared-models" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+time.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tauri = { version = "=2.11.5", features = ["tray-icon"] }
+tauri-plugin-autostart = "=2.5.1"
+tauri-plugin-notification = "=2.3.3"
+tauri-plugin-single-instance = "=2.4.3"
+tauri-plugin-window-state = "=2.4.1"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+airbattery-dbus = { path = "../../../crates/airbattery-dbus" }
+bluetooth-linux = { path = "../../../crates/bluetooth-linux" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+bluetooth-windows = { path = "../../../crates/bluetooth-windows" }

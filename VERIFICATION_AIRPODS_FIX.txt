@@ -1,0 +1,37 @@
+AirBattery AirPods Pro 2020 fast-refresh and menu-layering verification
+Date: 2026-08-01
+
+Implemented:
+- Serialized Apple BLE discovery with a two-second scan window on a three-second desktop cadence.
+- Missed refresh ticks continue to be skipped, so slow scans cannot queue overlapping Bluetooth work.
+- Linux and Windows normal discovery windows use the same two-second value.
+- Navigation rail and content panel now have explicit sibling stacking layers.
+- Navigation tooltip labels render inside the higher navigation stacking context instead of beneath the glass content panel.
+- Existing rotating AirPods advertisement correlation and real AirPods Pro 2020 parser fixtures are retained.
+
+Executed successfully in the patching environment:
+- Desktop Node tests: 31 passed, 0 failed.
+- GNOME Node tests: 8 passed, 0 failed.
+- Python release/Ubuntu script tests: 12 passed, 0 failed.
+- Reference model checks: 4 passed.
+- Desktop source checks: 203 passed.
+- Tauri source checks: 139 passed.
+- D-Bus source checks: 51 passed.
+- GNOME source checks: 47 passed.
+- Packaging source checks: 52 passed.
+- Shell syntax checks: passed.
+
+Not executed in this environment:
+- cargo fmt --all -- --check
+- cargo test --workspace
+- cargo clippy --workspace --all-targets -- -D warnings
+- cargo build --workspace --release
+- Frontend production build
+- Physical rebuilt desktop application test
+
+Reasons:
+- Rust/Cargo is unavailable in this environment.
+- npm dependency installation is blocked by the environment registry returning 404 for wrap-ansi-cjs, so vue-tsc/vite could not be installed here.
+
+Run ./RUN_UBUNTU_VALIDATION.sh on the target Ubuntu machine. The script saves the
+complete result to airbattery-validation.log.

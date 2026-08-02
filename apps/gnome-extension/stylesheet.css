@@ -1,0 +1,17 @@
+.airbattery-panel-box {
+  spacing: 6px;
+}
+
+.airbattery-panel-percentage {
+  font-feature-settings: "tnum" 1;
+  font-weight: 650;
+  min-width: 2.2em;
+}
+
+.airbattery-menu-title {
+  font-weight: 700;
+}
+
+.airbattery-menu-stale {
+  opacity: 0.68;
+}

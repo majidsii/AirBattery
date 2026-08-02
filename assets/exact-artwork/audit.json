@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "policy": "Only exact model photographs with an auditable redistribution license may override the SVG fallback.",
+  "reviewedAt": "2026-08-02",
+  "brands": [
+    {
+      "brand": "Apple",
+      "status": "partial",
+      "approvedKeys": [
+        "airpods-pro-1"
+      ],
+      "pendingKeys": [
+        "airpods-1",
+        "airpods-2",
+        "airpods-3",
+        "airpods-4",
+        "airpods-4-anc",
+        "airpods-pro-2",
+        "airpods-pro-3",
+        "airpods-max",
+        "airpods-max-2"
+      ]
+    },
+    {
+      "brand": "Samsung",
+      "status": "partial",
+      "approvedKeys": [
+        "galaxy-buds",
+        "galaxy-buds-live"
+      ],
+      "pendingKeys": [
+        "galaxy-buds2",
+        "galaxy-buds-fe",
+        "galaxy-buds3",
+        "galaxy-buds4"
+      ]
+    },
+    {
+      "brand": "Google",
+      "status": "partial",
+      "approvedKeys": [
+        "pixel-buds-pro"
+      ],
+      "pendingKeys": [
+        "pixel-buds",
+        "pixel-buds-2a"
+      ]
+    },
+    {
+      "brand": "Nothing",
+      "status": "partial",
+      "approvedKeys": [
+        "nothing-ear-1"
+      ],
+      "pendingKeys": [
+        "nothing-ear",
+        "nothing-ear-a",
+        "nothing-ear-open"
+      ]
+    },
+    {
+      "brand": "Huawei",
+      "status": "partial",
+      "approvedKeys": [
+        "huawei-freebuds-6"
+      ],
+      "pendingKeys": [
+        "huawei-freebuds",
+        "huawei-freebuds-pro",
+        "huawei-freeclip"
+      ]
+    },
+    {
+      "brand": "Xiaomi / Redmi",
+      "status": "partial",
+      "approvedKeys": [
+        "xiaomi-buds-5"
+      ],
+      "pendingKeys": [
+        "xiaomi-buds",
+        "xiaomi-buds-6",
+        "redmi-buds-3",
+        "redmi-buds",
+        "redmi-buds-4",
+        "redmi-buds-5",
+        "redmi-buds-6",
+        "redmi-buds-8"
+      ]
+    },
+    {
+      "brand": "Beats",
+      "status": "partial",
+      "approvedKeys": [
+        "beats-studio-buds-plus"
+      ],
+      "pendingKeys": [
+        "beats-studio-buds",
+        "beats-fit-pro",
+        "beats-earbuds"
+      ]
+    },
+    {
+      "brand": "QCY",
+      "status": "fallback-only",
+      "approvedKeys": [],
+      "reason": "No phase-one exact photograph with a verified redistribution license has been approved."
+    },
+    {
+      "brand": "Soundcore",
+      "status": "partial",
+      "approvedKeys": [
+        "soundcore-sport-x20"
+      ],
+      "pendingKeys": [
+        "soundcore-liberty",
+        "soundcore-p-series",
+        "soundcore-space-a40",
+        "soundcore-aerofit",
+        "soundcore-sleep",
+        "soundcore-earbuds"
+      ]
+    },
+    {
+      "brand": "Sony",
+      "status": "partial",
+      "approvedKeys": [
+        "sony-wf-1000xm4"
+      ],
+      "pendingKeys": [
+        "sony-wf",
+        "sony-wf-1000xm5",
+        "sony-linkbuds-fit",
+        "sony-linkbuds-open"
+      ]
+    },
+    {
+      "brand": "JBL",
+      "status": "partial",
+      "approvedKeys": [
+        "jbl-free"
+      ],
+      "pendingKeys": [
+        "jbl-tour-pro",
+        "jbl-live-beam",
+        "jbl-tune-beam",
+        "jbl-live-buds",
+        "jbl-tune-buds",
+        "jbl-earbuds"
+      ]
+    },
+    {
+      "brand": "OnePlus",
+      "status": "fallback-only",
+      "approvedKeys": [],
+      "reason": "No phase-one exact photograph with a verified redistribution license has been approved."
+    }
+  ]
+}

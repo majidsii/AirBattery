@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 130" fill="none" role="presentation">
+  <defs>
+    <linearGradient id="shell" x1="25" y1="18" x2="142" y2="111" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4b5564"/>
+      <stop offset="0.42" stop-color="#202733"/>
+      <stop offset="1" stop-color="#0d121a"/>
+    </linearGradient>
+    <linearGradient id="stem" x1="60" y1="61" x2="113" y2="117" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#313a48"/>
+      <stop offset="1" stop-color="#0b1018"/>
+    </linearGradient>
+    <filter id="shadow" x="5" y="7" width="170" height="123" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#07111f" flood-opacity=".3"/>
+    </filter>
+  </defs>
+  <ellipse cx="90" cy="119" rx="68" ry="7" fill="#07111f" opacity=".16"/>
+  <g filter="url(#shadow)">
+    <g transform="translate(-2)">
+      <path d="M28 48c0-18 13-31 31-31 18 0 31 11 31 27 0 16-12 29-29 30-18 1-33-9-33-26Z" fill="url(#shell)" stroke="#6f7a89" stroke-width="1.5"/>
+      <path d="M62 66h19v42c0 8-4 12-9.5 12S62 116 62 108V66Z" fill="url(#stem)" stroke="#6f7a89" stroke-width="1.5"/>
+      <ellipse cx="35" cy="48" rx="8" ry="5" fill="#080d14" transform="rotate(-18 35 48)"/>
+      <rect x="67" y="84" width="8" height="18" rx="4" fill="#111822"/>
+      <circle cx="74" cy="73" r="2.6" fill="#090e15"/>
+    </g>
+    <g transform="translate(182) scale(-1 1)">
+      <path d="M28 48c0-18 13-31 31-31 18 0 31 11 31 27 0 16-12 29-29 30-18 1-33-9-33-26Z" fill="url(#shell)" stroke="#6f7a89" stroke-width="1.5"/>
+      <path d="M62 66h19v42c0 8-4 12-9.5 12S62 116 62 108V66Z" fill="url(#stem)" stroke="#6f7a89" stroke-width="1.5"/>
+      <ellipse cx="35" cy="48" rx="8" ry="5" fill="#080d14" transform="rotate(-18 35 48)"/>
+      <rect x="67" y="84" width="8" height="18" rx="4" fill="#111822"/>
+      <circle cx="74" cy="73" r="2.6" fill="#090e15"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "notice": "Exact product photographs are redistributed under the per-file Creative Commons licenses listed below. AirBattery does not claim ownership or endorsement by the depicted brands.",
+  "sources": [
+    {
+      "id": "airpods-pro-1-case",
+      "artworkKey": "airpods-pro-1",
+      "mode": "case",
+      "outputName": "airpods-pro-1-case.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:AirPods Pro case.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_case.jpg",
+      "author": "— aconcagua (talk)",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4c/AirPods_Pro_case.jpg",
+      "sha1": "aa6286087183da5eae6fcc30d3cf70374aa185fc",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "airpods-pro-1-pair",
+      "artworkKey": "airpods-pro-1",
+      "mode": "pair",
+      "outputName": "airpods-pro-1-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:AirPods Pro 1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_1.jpg",
+      "author": "— aconcagua (talk)",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/9/98/AirPods_Pro_1.jpg",
+      "sha1": "ac3c721065fbb47fc4bc32ebfef1e2dceb98cf5e",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "airpods-pro-1-single",
+      "artworkKey": "airpods-pro-1",
+      "mode": "single",
+      "outputName": "airpods-pro-1-single.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:AirPods Pro 1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_1.jpg",
+      "author": "— aconcagua (talk)",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/9/98/AirPods_Pro_1.jpg",
+      "sha1": "ac3c721065fbb47fc4bc32ebfef1e2dceb98cf5e",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "beats-studio-buds-plus-pair",
+      "artworkKey": "beats-studio-buds-plus",
+      "mode": "pair",
+      "outputName": "beats-studio-buds-plus-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Beats Studio Buds Plus - 1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Beats_Studio_Buds_Plus_-_1.jpg",
+      "author": "Kyu3a",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/9/97/Beats_Studio_Buds_Plus_-_1.jpg",
+      "sha1": "120a9870a2f5d699b0d5520f3ad5e97cbcdfce60",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "galaxy-buds-live-pair",
+      "artworkKey": "galaxy-buds-live",
+      "mode": "pair",
+      "outputName": "galaxy-buds-live-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Samsung Galaxy Buds Live.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Buds_Live.jpg",
+      "author": "Hajoon0102",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Samsung_Galaxy_Buds_Live.jpg",
+      "sha1": "0e66df5ac955160c3e14947f172ca8047e700546",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "galaxy-buds-pair",
+      "artworkKey": "galaxy-buds",
+      "mode": "pair",
+      "outputName": "galaxy-buds-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Samsung Galaxy Buds.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Buds.jpg",
+      "author": "Kskhh",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Samsung_Galaxy_Buds.jpg",
+      "sha1": "76422939d8de19f7faa1999f9e843ccd5386ffa5",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "huawei-freebuds-6-pair",
+      "artworkKey": "huawei-freebuds-6",
+      "mode": "pair",
+      "outputName": "huawei-freebuds-6-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:HUAWEI FreeBuds 6.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:HUAWEI_FreeBuds_6.jpg",
+      "author": "Kyu3a",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/1/15/HUAWEI_FreeBuds_6.jpg",
+      "sha1": "099bd069ba1622fbcba93df0474ca8ef03cd0c6f",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "jbl-free-pair",
+      "artworkKey": "jbl-free",
+      "mode": "pair",
+      "outputName": "jbl-free-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:JBL Free Truly Earphones.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:JBL_Free_Truly_Earphones.jpg",
+      "author": "Mangadidoes134",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/JBL_Free_Truly_Earphones.jpg",
+      "sha1": "3c0e0a774499ac5359c5b8fc89b8bc2da83e7798",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "nothing-ear-1-case",
+      "artworkKey": "nothing-ear-1",
+      "mode": "case",
+      "outputName": "nothing-ear-1-case.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Nothing ear (1) wireless charging case.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Nothing_ear_(1)_wireless_charging_case.jpg",
+      "author": "Premeditated",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/1/18/Nothing_ear_%281%29_wireless_charging_case.jpg",
+      "sha1": "81a866c57f8e21884bf1e10f961320a67a76cb87",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "nothing-ear-1-single",
+      "artworkKey": "nothing-ear-1",
+      "mode": "single",
+      "outputName": "nothing-ear-1-single.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Nothing ear (1) earphone.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Nothing_ear_(1)_earphone.jpg",
+      "author": "Premeditated",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/8/89/Nothing_ear_%281%29_earphone.jpg",
+      "sha1": "cb083c507bd4e1b4df24abd53473107ad0429700",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "pixel-buds-pro-case",
+      "artworkKey": "pixel-buds-pro",
+      "mode": "case",
+      "outputName": "pixel-buds-pro-case.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Pixel Buds Pro, orange.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Pixel_Buds_Pro,_orange.jpg",
+      "author": "Mliu92",
+      "license": "CC-BY-SA-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/9/93/Pixel_Buds_Pro%2C_orange.jpg",
+      "sha1": "cdada1f0624de4cd9f1fc647ecda51136860a823",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "sony-wf-1000xm4-pair",
+      "artworkKey": "sony-wf-1000xm4",
+      "mode": "pair",
+      "outputName": "sony-wf-1000xm4-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Sony WF-1000XM4.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sony_WF-1000XM4.jpg",
+      "author": "KKPCW（Kyu3）",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Sony_WF-1000XM4.jpg",
+      "sha1": "c4f99b73572f461f175e952b91cf95c3539eaedf",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "soundcore-sport-x20-pair",
+      "artworkKey": "soundcore-sport-x20",
+      "mode": "pair",
+      "outputName": "soundcore-sport-x20-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Dispositivos soundcore.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Dispositivos_soundcore.jpg",
+      "author": "Guigag1",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Dispositivos_soundcore.jpg",
+      "sha1": "073dd0bfee231a0f260d5169f61693b782d5e179",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "xiaomi-buds-5-case",
+      "artworkKey": "xiaomi-buds-5",
+      "mode": "case",
+      "outputName": "xiaomi-buds-5-case.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Shibuya-Tokyo---2024-10-11 032.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Shibuya-Tokyo---2024-10-11_032.jpg",
+      "author": "RuinDig/Yuki Uchida",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/8/86/Shibuya-Tokyo---2024-10-11_032.jpg",
+      "sha1": "b0b11fd4bafb192c9fea5b1bfd5bc47b53288818",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    },
+    {
+      "id": "xiaomi-buds-5-pair",
+      "artworkKey": "xiaomi-buds-5",
+      "mode": "pair",
+      "outputName": "xiaomi-buds-5-pair.webp",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Shibuya-Tokyo---2024-10-11 030.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Shibuya-Tokyo---2024-10-11_030.jpg",
+      "author": "RuinDig/Yuki Uchida",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "resolvedUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Shibuya-Tokyo---2024-10-11_030.jpg",
+      "sha1": "53b31ce3f052601c3c17fe4ce4e9549b2eefb2ec",
+      "modifications": [
+        "crop",
+        "resize without stretching",
+        "WebP conversion"
+      ]
+    }
+  ]
+}

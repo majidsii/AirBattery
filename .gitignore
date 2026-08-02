@@ -1,0 +1,45 @@
+/target/
+/node_modules/
+/dist/
+*.log
+.env
+.DS_Store
+apps/desktop/src-tauri/gen/
+packaging/out/
+artifacts/
+
+/.worktrees/
+
+__pycache__/
+*.py[cod]
+
+.cache/
+
+# AirBattery local build artifacts
+**/target/
+**/node_modules/
+**/dist/
+/.cache/
+**/.cache/
+/coverage/
+**/coverage/
+# Local configuration and secrets
+.env.*
+!.env.example
+# Logs and temporary files
+*.tmp
+*.bak
+*.swp
+*~
+Thumbs.db
+# Local release packages and patches
+/*.zip
+/*.tar.gz
+/*.patch
+/*.sha256
+/*.deb
+/*.rpm
+/*.AppImage
+/*.msi
+/*.exe
+/*.dmg

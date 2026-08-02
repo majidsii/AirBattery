@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "airpods-pro-1-single",
+      "artworkKey": "airpods-pro-1",
+      "mode": "single",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:AirPods Pro 1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_1.jpg",
+      "author": "Aconcagua",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": true,
+      "crop": [
+        0.0,
+        0.0,
+        0.56,
+        1.0
+      ]
+    },
+    {
+      "id": "airpods-pro-1-pair",
+      "artworkKey": "airpods-pro-1",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:AirPods Pro 1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_1.jpg",
+      "author": "Aconcagua",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "airpods-pro-1-case",
+      "artworkKey": "airpods-pro-1",
+      "mode": "case",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:AirPods Pro case.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:AirPods_Pro_case.jpg",
+      "author": "Aconcagua",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "galaxy-buds-live-pair",
+      "artworkKey": "galaxy-buds-live",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Samsung Galaxy Buds Live.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Buds_Live.jpg",
+      "author": "Hajoon0102",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "galaxy-buds-pair",
+      "artworkKey": "galaxy-buds",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Samsung Galaxy Buds.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Samsung_Galaxy_Buds.jpg",
+      "author": "Kskhh",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "nothing-ear-1-single",
+      "artworkKey": "nothing-ear-1",
+      "mode": "single",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Nothing ear (1) earphone.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Nothing_ear_(1)_earphone.jpg",
+      "author": "Premeditated",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": true,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "nothing-ear-1-case",
+      "artworkKey": "nothing-ear-1",
+      "mode": "case",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Nothing ear (1) wireless charging case.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Nothing_ear_(1)_wireless_charging_case.jpg",
+      "author": "Premeditated",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "pixel-buds-pro-case",
+      "artworkKey": "pixel-buds-pro",
+      "mode": "case",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Pixel Buds Pro, orange.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Pixel_Buds_Pro,_orange.jpg",
+      "author": "Mliu92",
+      "license": "CC-BY-SA-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "huawei-freebuds-6-pair",
+      "artworkKey": "huawei-freebuds-6",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:HUAWEI FreeBuds 6.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:HUAWEI_FreeBuds_6.jpg",
+      "author": "Kyu3a",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "xiaomi-buds-5-pair",
+      "artworkKey": "xiaomi-buds-5",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Shibuya-Tokyo---2024-10-11 030.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Shibuya-Tokyo---2024-10-11_030.jpg",
+      "author": "RuinDig/Yuki Uchida",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "xiaomi-buds-5-case",
+      "artworkKey": "xiaomi-buds-5",
+      "mode": "case",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Shibuya-Tokyo---2024-10-11 032.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Shibuya-Tokyo---2024-10-11_032.jpg",
+      "author": "RuinDig/Yuki Uchida",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "beats-studio-buds-plus-pair",
+      "artworkKey": "beats-studio-buds-plus",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Beats Studio Buds Plus - 1.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Beats_Studio_Buds_Plus_-_1.jpg",
+      "author": "Kyu3a",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "sony-wf-1000xm4-pair",
+      "artworkKey": "sony-wf-1000xm4",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Sony WF-1000XM4.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Sony_WF-1000XM4.jpg",
+      "author": "KKPCW (Kyu3)",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": "soundcore-sport-x20-pair",
+      "artworkKey": "soundcore-sport-x20",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:Dispositivos soundcore.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Dispositivos_soundcore.jpg",
+      "author": "Guigag1",
+      "license": "CC-BY-SA-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        0.58
+      ]
+    },
+    {
+      "id": "jbl-free-pair",
+      "artworkKey": "jbl-free",
+      "mode": "pair",
+      "provider": "wikimedia-commons",
+      "fileTitle": "File:JBL Free Truly Earphones.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:JBL_Free_Truly_Earphones.jpg",
+      "author": "Mangadidoes134",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "mirrorSafe": false,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ]
+    }
+  ]
+}

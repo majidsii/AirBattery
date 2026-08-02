@@ -1,0 +1,22 @@
+[package]
+name = "airbattery-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+bluetooth-linux = { path = "../bluetooth-linux" }
+clap.workspace = true
+diagnostics = { path = "../diagnostics" }
+hex.workspace = true
+protocol-airpods = { path = "../protocol-airpods" }
+serde_json.workspace = true
+time.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

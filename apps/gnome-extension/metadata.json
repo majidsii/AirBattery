@@ -1,0 +1,10 @@
+{
+  "uuid": "airbattery@airbattery.github.io",
+  "name": "AirBattery",
+  "description": "Shows privacy-safe Bluetooth battery information supplied by the local AirBattery desktop service.",
+  "shell-version": [
+    "50"
+  ],
+  "settings-schema": "io.github.airbattery.gnome",
+  "url": "https://github.com/airbattery/airbattery"
+}

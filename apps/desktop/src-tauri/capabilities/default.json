@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "desktop-default",
+  "description": "Narrow event capabilities for AirBattery first-party windows. Bluetooth, settings, diagnostics, notifications, and autostart remain behind validated Rust commands.",
+  "windows": ["main", "widget"],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten"
+  ]
+}

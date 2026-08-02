@@ -1,0 +1,32 @@
+[package]
+name = "bluetooth-windows"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+airbattery-service = { path = "../airbattery-service" }
+device-protocols = { path = "../device-protocols" }
+diagnostics = { path = "../diagnostics" }
+protocol-airpods = { path = "../protocol-airpods" }
+shared-models = { path = "../shared-models" }
+thiserror.workspace = true
+time.workspace = true
+tokio.workspace = true
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "=0.62.2", features = [
+  "Devices_Bluetooth",
+  "Devices_Bluetooth_Advertisement",
+  "Devices_Bluetooth_GenericAttributeProfile",
+  "Devices_Enumeration",
+  "Devices_Radios",
+  "Foundation",
+  "Foundation_Collections",
+  "Storage_Streams",
+] }

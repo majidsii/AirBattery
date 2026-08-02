@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=AirBattery
+GenericName=Bluetooth Battery Monitor
+Comment=Monitor supported Bluetooth audio-device batteries locally
+Exec=airbattery
+Icon=io.github.airbattery.airbattery
+Terminal=false
+Categories=Utility;AudioVideo;
+Keywords=Bluetooth;Battery;AirPods;Headphones;Earbuds;
+StartupNotify=true
+StartupWMClass=airbattery
+X-GNOME-UsesNotifications=true

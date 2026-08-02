@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.airbattery.airbattery</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>AirBattery</name>
+  <summary>Local Bluetooth battery monitoring for Linux and Windows</summary>
+  <description>
+    <p>AirBattery presents battery information reported by supported Bluetooth audio devices while keeping protocol handling and identifiers in the native backend.</p>
+    <p>Availability varies by device, operating system, connection state, and advertisement freshness. Missing component values are never represented as zero.</p>
+  </description>
+  <launchable type="desktop-id">io.github.airbattery.airbattery.desktop</launchable>
+  <provides>
+    <binary>airbattery</binary>
+  </provides>
+  <categories>
+    <category>Utility</category>
+    <category>AudioVideo</category>
+  </categories>
+  <url type="homepage">https://github.com/airbattery/airbattery</url>
+  <url type="bugtracker">https://github.com/airbattery/airbattery/issues</url>
+  <developer id="io.github.airbattery">
+    <name>AirBattery contributors</name>
+  </developer>
+  <releases>
+    <release version="0.1.0-alpha.1" date="2026-07-29" type="development">
+      <description>
+        <p>Development target; native package and hardware validation remain required before publication.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
