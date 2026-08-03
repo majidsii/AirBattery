@@ -1,10 +1,14 @@
 //! `BlueZ` desktop collection with bounded discovery.
 
-use std::{collections::BTreeMap, time::Duration};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    time::Duration,
+};
 
 use airbattery_service::DeviceDescriptor;
 use bluetooth_linux::{
     BluezDeviceSnapshot, LinuxBluetoothBackend, latest_apple_accessory_battery, map_bluez_snapshot,
+    stop_apple_accessory_monitors, sync_apple_accessory_monitors,
 };
 use device_protocols::{RawObservation, VendorProtocol};
 use diagnostics::sanitize_identifier;
@@ -25,6 +29,7 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
         Ok(backend) => backend,
         Err(error) => {
             tracing::warn!(error = %error, "BlueZ session is unavailable");
+            stop_apple_accessory_monitors().await;
             return Ok(unavailable(
                 "BlueZ is unavailable or no Bluetooth adapter was found.",
             ));
@@ -34,6 +39,7 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
         Ok(status) => status,
         Err(error) => {
             tracing::warn!(error = %error, "BlueZ adapter status query failed");
+            stop_apple_accessory_monitors().await;
             return Ok(unavailable(
                 "The Bluetooth adapter status could not be read.",
             ));
@@ -44,6 +50,7 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
         Ok(values) => index_snapshots(values),
         Err(error) => {
             tracing::warn!(error = %error, "BlueZ known-device query failed");
+            stop_apple_accessory_monitors().await;
             return Ok(PlatformCollection {
                 status: BackendStatus {
                     platform: PlatformKind::Linux,
@@ -80,13 +87,22 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
 
     correlate_airpods_advertisements(&mut snapshots);
 
-    let mut exact_packets = BTreeMap::new();
-    for snapshot in snapshots
+    let connected_addresses = snapshots
+        .values()
+        .filter(|snapshot| snapshot.connected)
+        .map(|snapshot| snapshot.address.clone())
+        .collect::<BTreeSet<_>>();
+    let connected_apple_accessories = snapshots
         .values()
         .filter(|snapshot| snapshot.connected && is_paired_apple_audio_candidate(snapshot))
-    {
-        if let Some(packet) = latest_apple_accessory_battery(&snapshot.address).await {
-            exact_packets.insert(snapshot.address.clone(), packet);
+        .map(|snapshot| snapshot.address.clone())
+        .collect::<BTreeSet<_>>();
+    sync_apple_accessory_monitors(&connected_addresses, &connected_apple_accessories).await;
+
+    let mut exact_packets = BTreeMap::new();
+    for address in &connected_addresses {
+        if let Some(packet) = latest_apple_accessory_battery(address).await {
+            exact_packets.insert(address.clone(), packet);
         }
     }
 
@@ -300,7 +316,8 @@ fn is_paired_apple_audio_candidate(snapshot: &BluezDeviceSnapshot) -> bool {
         .to_ascii_lowercase();
     let apple_identity = name.contains("airpods")
         || name.contains("beats")
-        || snapshot.vendor_id == Some(u32::from(APPLE_MANUFACTURER_ID));
+        || snapshot.vendor_id == Some(u32::from(APPLE_MANUFACTURER_ID))
+        || has_airpods_payload(snapshot);
     apple_identity && (is_audio_device(snapshot) || has_airpods_payload(snapshot))
 }
 
@@ -437,6 +454,32 @@ mod tests {
             .unwrap_or_else(|| panic!("connected device missing"));
         assert!(has_airpods_payload(merged));
         assert_eq!(merged.alias.as_deref(), Some("My AirPods"));
+    }
+
+    #[test]
+    fn renamed_connected_airpods_becomes_an_exact_monitor_candidate_after_correlation() {
+        let mut connected = snapshot("known", true, Some("audio-headphones"));
+        connected.alias = Some("SHABIN".to_owned());
+        connected.vendor_id = None;
+
+        let mut advertisement = snapshot("rotating", false, None);
+        advertisement.alias = None;
+        advertisement.rssi = Some(-38);
+        advertisement
+            .manufacturer_data
+            .insert(APPLE_MANUFACTURER_ID, airpods_payload());
+        let mut snapshots = BTreeMap::from([
+            (connected.address.clone(), connected),
+            (advertisement.address.clone(), advertisement),
+        ]);
+
+        correlate_airpods_advertisements(&mut snapshots);
+
+        let renamed = snapshots
+            .get("known")
+            .unwrap_or_else(|| panic!("renamed connected device missing"));
+        assert!(has_airpods_payload(renamed));
+        assert!(is_paired_apple_audio_candidate(renamed));
     }
 
     #[test]

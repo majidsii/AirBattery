@@ -1,7 +1,7 @@
 //! Event-driven Apple accessory battery monitoring over classic `Bluetooth` `L2CAP`.
 
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     sync::{Arc, OnceLock},
     time::Duration,
 };
@@ -11,13 +11,12 @@ use bluer::{
     l2cap::{SeqPacket, SocketAddr},
 };
 use time::OffsetDateTime;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{Mutex, RwLock, watch};
 
 const APPLE_ACCESSORY_PSM: u16 = 0x1001;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(4);
 const RECEIVE_TIMEOUT: Duration = Duration::from_secs(20);
 const RECONNECT_DELAY: Duration = Duration::from_secs(4);
-const PACKET_FRESHNESS: time::Duration = time::Duration::seconds(30);
 const HANDSHAKE_PACKET: [u8; 16] = [
     0x00, 0x00, 0x04, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 ];
@@ -34,9 +33,23 @@ pub struct AppleAccessoryPacket {
     pub observed_at: OffsetDateTime,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct MonitorEntry {
     latest: RwLock<Option<AppleAccessoryPacket>>,
+    shutdown: watch::Sender<bool>,
+}
+
+impl MonitorEntry {
+    fn new() -> (Arc<Self>, watch::Receiver<bool>) {
+        let (shutdown, receiver) = watch::channel(false);
+        (
+            Arc::new(Self {
+                latest: RwLock::new(None),
+                shutdown,
+            }),
+            receiver,
+        )
+    }
 }
 
 static MONITORS: OnceLock<Mutex<BTreeMap<String, Arc<MonitorEntry>>>> = OnceLock::new();
@@ -45,38 +58,115 @@ fn monitors() -> &'static Mutex<BTreeMap<String, Arc<MonitorEntry>>> {
     MONITORS.get_or_init(|| Mutex::new(BTreeMap::new()))
 }
 
-/// Starts an event-driven monitor for `address` when necessary and returns its
-/// latest fresh exact battery packet without blocking the normal scan cycle.
-pub async fn latest_apple_accessory_battery(address: &str) -> Option<AppleAccessoryPacket> {
-    let (entry, created) = {
-        let mut entries = monitors().lock().await;
-        if let Some(entry) = entries.get(address) {
-            (Arc::clone(entry), false)
-        } else {
-            let entry = Arc::new(MonitorEntry::default());
-            entries.insert(address.to_owned(), Arc::clone(&entry));
-            (entry, true)
-        }
-    };
-
-    if created {
-        let monitor_address = address.to_owned();
-        let monitor_entry = Arc::clone(&entry);
-        tokio::spawn(async move {
-            monitor_loop(monitor_address, monitor_entry).await;
-        });
-    }
-
-    let latest = entry.latest.read().await.clone();
-    latest.filter(|packet| OffsetDateTime::now_utc() - packet.observed_at <= PACKET_FRESHNESS)
+fn normalized_address(address: &str) -> String {
+    address.trim().to_ascii_uppercase()
 }
 
-async fn monitor_loop(address: String, entry: Arc<MonitorEntry>) {
+/// Synchronizes long-lived Apple accessory monitors with the authoritative set
+/// of currently connected Apple audio candidates.
+///
+/// Existing monitors are retained while their device remains connected, even
+/// when a later scan temporarily lacks Apple advertisement identity. New
+/// monitors are created only for confirmed candidates. Disconnected addresses
+/// receive a cancellation signal so their sockets and retry loops are released.
+/// Address keys are normalized to avoid duplicate monitors caused by casing
+/// differences between platform snapshots.
+pub async fn sync_apple_accessory_monitors(
+    connected_addresses: &BTreeSet<String>,
+    candidate_addresses: &BTreeSet<String>,
+) {
+    let connected = connected_addresses
+        .iter()
+        .map(|address| normalized_address(address))
+        .collect::<BTreeSet<_>>();
+    let candidates = candidate_addresses
+        .iter()
+        .map(|address| normalized_address(address))
+        .collect::<BTreeSet<_>>();
+
+    let mut entries = monitors().lock().await;
+    let stale = entries
+        .keys()
+        .filter(|address| !connected.contains(*address))
+        .cloned()
+        .collect::<Vec<_>>();
+    for address in stale {
+        if let Some(entry) = entries.remove(&address) {
+            let _ = entry.shutdown.send(true);
+        }
+    }
+
+    for address in candidates {
+        if !connected.contains(&address) || entries.contains_key(&address) {
+            continue;
+        }
+        let (entry, receiver) = MonitorEntry::new();
+        entries.insert(address.clone(), Arc::clone(&entry));
+        tokio::spawn(async move {
+            monitor_loop(address, entry, receiver).await;
+        });
+    }
+}
+
+/// Stops all active Apple accessory monitors and releases their retry loops.
+pub async fn stop_apple_accessory_monitors() {
+    let mut entries = monitors().lock().await;
+    for entry in entries.values() {
+        let _ = entry.shutdown.send(true);
+    }
+    entries.clear();
+}
+
+/// Returns the latest exact battery packet captured for `address`.
+///
+/// This accessor intentionally retains the packet beyond transport-level retry
+/// windows. Its original observation timestamp is preserved so the normalized
+/// registry, not the socket layer, decides when the value becomes stale.
+pub async fn latest_apple_accessory_battery(address: &str) -> Option<AppleAccessoryPacket> {
+    let key = normalized_address(address);
+    let entry = {
+        let entries = monitors().lock().await;
+        entries.get(&key).cloned()
+    }?;
+    entry.latest.read().await.clone()
+}
+
+async fn monitor_loop(
+    address: String,
+    entry: Arc<MonitorEntry>,
+    mut shutdown: watch::Receiver<bool>,
+) {
     loop {
-        if let Err(error) = monitor_session(&address, &entry).await {
+        if *shutdown.borrow() {
+            return;
+        }
+
+        let session_result = tokio::select! {
+            result = monitor_session(&address, &entry) => Some(result),
+            changed = shutdown.changed() => {
+                if changed.is_err() || *shutdown.borrow() {
+                    None
+                } else {
+                    continue;
+                }
+            }
+        };
+
+        let Some(session_result) = session_result else {
+            return;
+        };
+        if let Err(error) = session_result {
             tracing::debug!(device_address = %address, error = %error, "Apple accessory battery monitor disconnected");
         }
-        tokio::time::sleep(RECONNECT_DELAY).await;
+
+        tokio::select! {
+            () = tokio::time::sleep(RECONNECT_DELAY) => {}
+            changed = shutdown.changed() => {
+                if changed.is_err() || *shutdown.borrow() {
+                    return;
+                }
+            }
+        }
     }
 }
 
@@ -149,7 +239,15 @@ fn is_complete_battery_packet(packet: &[u8]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::is_complete_battery_packet;
+    use super::{is_complete_battery_packet, normalized_address};
+
+    #[test]
+    fn normalizes_monitor_keys_across_platform_address_casing() {
+        assert_eq!(
+            normalized_address("  aa:bb:cc:dd:ee:ff "),
+            "AA:BB:CC:DD:EE:FF"
+        );
+    }
 
     #[test]
     fn recognizes_complete_exact_battery_notifications_only() {

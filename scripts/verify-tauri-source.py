@@ -77,6 +77,12 @@ for json_path in [TAURI / "tauri.conf.json", TAURI / "capabilities" / "default.j
             checks += 1
 
 check("airbattery-dbus" in (TAURI / "Cargo.toml").read_text(encoding="utf-8"), "Linux D-Bus dependency missing")
+workspace_cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+check(
+    workspace_cargo.get("workspace", {}).get("package", {}).get("repository")
+    == "https://github.com/majidsii/AirBattery",
+    "workspace repository URL does not point to majidsii/AirBattery",
+)
 
 if (TAURI / "capabilities" / "default.json").is_file():
     capability = json.loads((TAURI / "capabilities" / "default.json").read_text(encoding="utf-8"))
@@ -123,6 +129,29 @@ if (SRC / "commands.rs").is_file():
     commands = (SRC / "commands.rs").read_text(encoding="utf-8")
     check("gnome::publish" in commands, "native refresh does not publish a GNOME snapshot")
     check("gnome::reconcile" in commands, "settings changes do not reconcile GNOME integration")
+
+accessory_path = ROOT / "crates" / "bluetooth-linux" / "src" / "accessory.rs"
+linux_platform_path = SRC / "platform" / "linux.rs"
+if accessory_path.is_file() and linux_platform_path.is_file():
+    accessory = accessory_path.read_text(encoding="utf-8")
+    linux_platform = linux_platform_path.read_text(encoding="utf-8")
+    check("sync_apple_accessory_monitors" in accessory, "Apple accessory monitor synchronization is missing")
+    check("stop_apple_accessory_monitors" in accessory, "Apple accessory monitor shutdown API is missing")
+    check("watch::Sender<bool>" in accessory, "Apple accessory monitors lack cancellation channels")
+    check("PACKET_FRESHNESS" not in accessory, "transport layer still discards exact packets on a fixed timer")
+    check("sync_apple_accessory_monitors" in linux_platform, "Linux collection does not synchronize Apple accessory monitors")
+    check(
+        linux_platform.count("stop_apple_accessory_monitors().await;") >= 3,
+        "Linux collection does not stop accessory monitors on BlueZ failure paths",
+    )
+    check(
+        "renamed_connected_airpods_becomes_an_exact_monitor_candidate_after_correlation" in linux_platform,
+        "renamed AirPods monitor regression contract is missing",
+    )
+    check(
+        "has_airpods_payload(snapshot)" in linux_platform,
+        "correlated AirPods advertisements do not establish exact monitor identity",
+    )
 
 if (SRC / "lib.rs").is_file():
     integration_lib = (SRC / "lib.rs").read_text(encoding="utf-8")

@@ -1,0 +1,245 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+
+jobs:
+  verify:
+    name: Verify release tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install CI parser dependency
+        run: python3 -m pip install --disable-pip-version-check --no-input PyYAML==6.0.3
+
+      - name: Verify version and release source
+        run: |
+          python3 scripts/verify-version-sync.py --expected-tag "$GITHUB_REF_NAME"
+          python3 scripts/verify-ci-source.py
+          python3 scripts/verify-release-source.py
+
+  build-linux:
+    name: Build Linux bundles
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.97.1
+
+      - name: Cache Cargo data
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-release-1.97.1-${{ hashFiles('Cargo.lock', 'apps/desktop/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-release-1.97.1-
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libdbus-1-dev \
+            libglib2.0-bin \
+            pkg-config \
+            patchelf \
+            xdg-utils
+
+      - name: Install frontend dependencies
+        run: npm --prefix apps/desktop ci
+
+      - name: Build Tauri Linux packages
+        uses: tauri-apps/tauri-action@v1
+        with:
+          projectPath: apps/desktop
+          args: --bundles deb,appimage
+
+      - name: Package GNOME extension
+        run: ./scripts/package-gnome-extension.sh target/gnome-extension
+
+      - name: Collect and verify Linux artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination="target/release-artifacts/linux"
+          mkdir -p "$destination"
+          find target/release/bundle -type f \
+            \( -name 'AirBattery*.deb' -o -name 'AirBattery*.AppImage' -o -name 'airbattery*.deb' -o -name 'airbattery*.AppImage' \) \
+            -exec cp -v {} "$destination/" \;
+          cp -v target/gnome-extension/airbattery@airbattery.github.io.zip "$destination/"
+          python3 scripts/verify-release-artifacts.py "$destination" --platform linux
+
+      - name: Upload Linux release artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-release
+          path: target/release-artifacts/linux/
+          if-no-files-found: error
+          retention-days: 1
+
+  build-windows:
+    name: Build Windows installer
+    needs: verify
+    runs-on: windows-2022
+    timeout-minutes: 60
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.97.1
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Cargo data
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-release-1.97.1-${{ hashFiles('Cargo.lock', 'apps/desktop/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-release-1.97.1-
+
+      - name: Install frontend dependencies
+        run: npm --prefix apps/desktop ci
+
+      - name: Build Tauri Windows installer
+        uses: tauri-apps/tauri-action@v1
+        with:
+          projectPath: apps/desktop
+          args: --bundles nsis
+
+      - name: Collect and verify Windows artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $destination = "target/release-artifacts/windows"
+          New-Item -ItemType Directory -Force -Path $destination | Out-Null
+          $installers = @(Get-ChildItem "target/release/bundle/nsis" -Filter "*-setup.exe" -File)
+          if ($installers.Count -ne 1) {
+            throw "Expected exactly one NSIS setup executable, found $($installers.Count)."
+          }
+          Copy-Item $installers[0].FullName -Destination $destination
+          python scripts/verify-release-artifacts.py $destination --platform windows
+
+      - name: Upload Windows release artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-release
+          path: target/release-artifacts/windows/
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish draft release
+    needs:
+      - verify
+      - build-linux
+      - build-windows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Download native artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: "*-release"
+          path: target/release-artifacts
+          merge-multiple: true
+
+      - name: Validate artifacts and create SHA256SUMS
+        run: |
+          python3 scripts/verify-release-artifacts.py target/release-artifacts --platform all
+          python3 scripts/checksum-artifacts.py target/release-artifacts
+          python3 scripts/verify-release-artifacts.py target/release-artifacts --platform all --checksums SHA256SUMS
+
+      - name: Create or update draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="$GITHUB_REF_NAME"
+          if gh release view "$tag" --json isDraft --jq .isDraft > target/release-is-draft 2>/dev/null; then
+            if [[ "$(cat target/release-is-draft)" != "true" ]]; then
+              echo "Refusing to overwrite an already published release: $tag" >&2
+              exit 1
+            fi
+          else
+            gh release create "$tag" \
+              --verify-tag \
+              --draft \
+              --title "AirBattery $tag" \
+              --notes "Automated unsigned draft. Review native smoke tests, hardware status, and SHA256SUMS before publishing."
+          fi
+
+          mapfile -d '' assets < <(find target/release-artifacts -maxdepth 1 -type f -print0 | sort -z)
+          if [[ ${#assets[@]} -eq 0 ]]; then
+            echo "No release assets found." >&2
+            exit 1
+          fi
+          gh release upload "$tag" "${assets[@]}" --clobber

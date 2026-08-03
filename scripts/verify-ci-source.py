@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static validation for AirBattery GitHub Actions and dependency policy."""
+"""Static validation for AirBattery CI, release automation, and dependency policy."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 CI_PATH = ROOT / ".github/workflows/ci.yml"
+RELEASE_PATH = ROOT / ".github/workflows/release.yml"
 DEPENDABOT_PATH = ROOT / ".github/dependabot.yml"
 DENY_PATH = ROOT / "deny.toml"
 errors: list[str] = []
@@ -27,11 +28,11 @@ def check(condition: bool, message: str) -> None:
 
 
 def require(path: Path) -> str:
-    check(path.is_file(), f"missing CI source: {path.relative_to(ROOT)}")
+    check(path.is_file(), f"missing automation source: {path.relative_to(ROOT)}")
     if not path.is_file():
         return ""
     text = path.read_text(encoding="utf-8")
-    check(bool(text.strip()), f"empty CI source: {path.relative_to(ROOT)}")
+    check(bool(text.strip()), f"empty automation source: {path.relative_to(ROOT)}")
     return text
 
 
@@ -52,17 +53,48 @@ def steps_for(job: dict[str, Any]) -> list[dict[str, Any]]:
     return [step for step in steps if isinstance(step, dict)] if isinstance(steps, list) else []
 
 
+def uses_for(job: dict[str, Any]) -> set[str]:
+    return {str(step.get("uses")) for step in steps_for(job) if step.get("uses")}
+
+
+def list_value(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    if isinstance(value, str):
+        return [value]
+    return []
+
+
+def validate_checkout(jobs: dict[str, Any], label: str) -> None:
+    for name, job in jobs.items():
+        if not isinstance(job, dict):
+            errors.append(f"{label} job {name} must be a mapping")
+            continue
+        checkout_steps = [step for step in steps_for(job) if step.get("uses") == "actions/checkout@v7"]
+        check(bool(checkout_steps), f"{label} job {name} must use actions/checkout@v7")
+        for step in checkout_steps:
+            with_values = step.get("with", {}) if isinstance(step.get("with", {}), dict) else {}
+            check(
+                with_values.get("persist-credentials") == "false",
+                f"{label} job {name} checkout must disable persisted credentials",
+            )
+
+
 ci_text = require(CI_PATH)
+release_text = require(RELEASE_PATH)
 dependabot_text = require(DEPENDABOT_PATH)
 deny_text = require(DENY_PATH)
 ci = load_yaml(ci_text, "CI")
+release = load_yaml(release_text, "release")
 
+# Pull-request and main-branch CI.
 events = ci.get("on", {}) if isinstance(ci.get("on", {}), dict) else {}
 check("pull_request" in events, "CI must run for pull requests")
 push = events.get("push", {}) if isinstance(events.get("push", {}), dict) else {}
-branches = push.get("branches", []) if isinstance(push.get("branches", []), list) else []
+branches = list_value(push.get("branches", []))
 check("main" in branches, "CI push trigger must include main")
 check("workflow_dispatch" in events, "CI must support manual dispatch")
+check("pull_request_target" not in events, "CI must not use pull_request_target")
 
 permissions = ci.get("permissions", {}) if isinstance(ci.get("permissions", {}), dict) else {}
 check(permissions.get("contents") == "read", "CI top-level contents permission must be read")
@@ -75,43 +107,32 @@ check(concurrency.get("cancel-in-progress") == "true", "CI must cancel supersede
 jobs = ci.get("jobs", {}) if isinstance(ci.get("jobs", {}), dict) else {}
 required_jobs = {"source", "frontend", "rust-linux", "rust-windows", "dependency-audit"}
 check(required_jobs.issubset(jobs), f"CI jobs missing: {sorted(required_jobs - set(jobs))}")
-
-for name, job in jobs.items():
-    if not isinstance(job, dict):
-        errors.append(f"CI job {name} must be a mapping")
-        continue
-    job_permissions = job.get("permissions", {})
-    check("contents: write" not in str(job_permissions).lower(), f"CI job {name} grants contents write")
-    steps = steps_for(job)
-    checkout_steps = [step for step in steps if step.get("uses") == "actions/checkout@v7"]
-    check(bool(checkout_steps), f"CI job {name} must use actions/checkout@v7")
-    for step in checkout_steps:
-        with_values = step.get("with", {}) if isinstance(step.get("with", {}), dict) else {}
-        check(with_values.get("persist-credentials") == "false", f"CI job {name} checkout must disable persisted credentials")
+validate_checkout(jobs, "CI")
 
 check(jobs.get("source", {}).get("runs-on") == "ubuntu-24.04", "source job must use ubuntu-24.04")
 check(jobs.get("frontend", {}).get("runs-on") == "ubuntu-24.04", "frontend job must use ubuntu-24.04")
 check(jobs.get("rust-linux", {}).get("runs-on") == "ubuntu-24.04", "rust-linux job must use ubuntu-24.04")
 check(jobs.get("rust-windows", {}).get("runs-on") == "windows-2022", "rust-windows job must use windows-2022")
+check(jobs.get("dependency-audit", {}).get("runs-on") == "ubuntu-24.04", "dependency-audit job must use ubuntu-24.04")
 
-for name in ("frontend", "dependency-audit"):
-    uses = {step.get("uses") for step in steps_for(jobs.get(name, {}))}
-    check("actions/setup-node@v6" in uses, f"{name} job must use actions/setup-node@v6")
-
+for name in ("source", "frontend", "rust-linux", "dependency-audit"):
+    check("actions/setup-node@v7" in uses_for(jobs.get(name, {})), f"{name} job must use actions/setup-node@v7")
 for name in ("rust-linux", "rust-windows", "dependency-audit"):
-    uses = {step.get("uses") for step in steps_for(jobs.get(name, {}))}
-    check("dtolnay/rust-toolchain@stable" in uses, f"{name} job must install Rust with dtolnay/rust-toolchain")
+    check(
+        "dtolnay/rust-toolchain@stable" in uses_for(jobs.get(name, {})),
+        f"{name} job must install Rust with dtolnay/rust-toolchain",
+    )
 
-uses_all = [
+ci_uses = [
     str(step.get("uses"))
     for job in jobs.values()
     if isinstance(job, dict)
     for step in steps_for(job)
     if step.get("uses")
 ]
-check("actions/cache@v5" in uses_all, "CI must use actions/cache@v5")
-check(not any(re.search(r"@(main|master|latest)$", use) for use in uses_all), "CI action references must not use mutable branches")
-check(not any(use.startswith("actions/upload-artifact") for use in uses_all), "CI validation must not upload release artifacts")
+check("actions/cache@v5" in ci_uses, "CI must use actions/cache@v5")
+check(not any(re.search(r"@(main|master|latest)$", use) for use in ci_uses), "CI action references must not use mutable branches")
+check(not any(use.startswith("actions/upload-artifact") for use in ci_uses), "CI validation must not upload release artifacts")
 
 for token in (
     "cargo fmt --all -- --check",
@@ -122,15 +143,102 @@ for token in (
     "npm run test",
     "npm run test:ui",
     "npm run build",
+    "python3 scripts/verify-ci-source.py",
+    "python3 scripts/verify-release-source.py",
+    "python3 scripts/verify-version-sync.py",
     "python3 -m unittest tests/release_artifacts_test.py",
 ):
     check(token in ci_text, f"CI command missing: {token}")
-check("cargo check -p airbattery-desktop --target x86_64-pc-windows-msvc" in ci_text, "Windows desktop target check missing")
+check(
+    "cargo check -p airbattery-desktop --target x86_64-pc-windows-msvc" in ci_text,
+    "Windows desktop target check missing",
+)
 check("cargo deny check" in ci_text, "cargo-deny audit missing")
+check('rust-version: "1.97.1"' in ci_text, "cargo-deny Rust version pin missing")
 check("npm audit" in ci_text, "npm audit missing")
 check("contents: write" not in ci_text, "CI workflow must not request contents write")
 check("pull-requests: write" not in ci_text, "CI workflow must not request pull-request write")
 
+# Tag-only draft release workflow.
+release_events = release.get("on", {}) if isinstance(release.get("on", {}), dict) else {}
+release_push = release_events.get("push", {}) if isinstance(release_events.get("push", {}), dict) else {}
+release_tags = list_value(release_push.get("tags", []))
+check("v*" in release_tags, "release workflow must run on v* tags")
+check(not list_value(release_push.get("branches", [])), "release workflow must not run on branch pushes")
+check("pull_request" not in release_events, "release workflow must not run on pull requests")
+check("workflow_dispatch" not in release_events, "release workflow must remain tag-only")
+
+release_permissions = release.get("permissions", {}) if isinstance(release.get("permissions", {}), dict) else {}
+check(release_permissions.get("contents") == "read", "release top-level contents permission must be read")
+check("write" not in str(release_permissions).lower(), "release top-level permissions must not grant write access")
+
+release_jobs = release.get("jobs", {}) if isinstance(release.get("jobs", {}), dict) else {}
+required_release_jobs = {"verify", "build-linux", "build-windows", "publish"}
+check(
+    required_release_jobs.issubset(release_jobs),
+    f"release jobs missing: {sorted(required_release_jobs - set(release_jobs))}",
+)
+validate_checkout(release_jobs, "release")
+
+check(release_jobs.get("verify", {}).get("runs-on") == "ubuntu-24.04", "release verify job must use ubuntu-24.04")
+check(release_jobs.get("build-linux", {}).get("runs-on") == "ubuntu-24.04", "Linux release job must use ubuntu-24.04")
+check(release_jobs.get("build-windows", {}).get("runs-on") == "windows-2022", "Windows release job must use windows-2022")
+check(release_jobs.get("publish", {}).get("runs-on") == "ubuntu-24.04", "publish job must use ubuntu-24.04")
+
+for name in ("build-linux", "build-windows"):
+    uses = uses_for(release_jobs.get(name, {}))
+    check("actions/setup-node@v7" in uses, f"{name} must use actions/setup-node@v7")
+    check("dtolnay/rust-toolchain@stable" in uses, f"{name} must install the Rust toolchain")
+    check("tauri-apps/tauri-action@v1" in uses, f"{name} must build with tauri-apps/tauri-action@v1")
+    check("actions/upload-artifact@v7" in uses, f"{name} must upload native workflow artifacts")
+
+publish_uses = uses_for(release_jobs.get("publish", {}))
+check("actions/download-artifact@v8" in publish_uses, "publish job must download native artifacts")
+publish_permissions = release_jobs.get("publish", {}).get("permissions", {})
+check(
+    isinstance(publish_permissions, dict) and publish_permissions.get("contents") == "write",
+    "only the publish job must receive contents write permission",
+)
+for name in ("verify", "build-linux", "build-windows"):
+    check(
+        "write" not in str(release_jobs.get(name, {}).get("permissions", {})).lower(),
+        f"release job {name} must not receive write permission",
+    )
+
+publish_needs = set(list_value(release_jobs.get("publish", {}).get("needs", [])))
+check(
+    {"verify", "build-linux", "build-windows"}.issubset(publish_needs),
+    "publish job must wait for verification and both native builds",
+)
+
+release_uses = [
+    str(step.get("uses"))
+    for job in release_jobs.values()
+    if isinstance(job, dict)
+    for step in steps_for(job)
+    if step.get("uses")
+]
+check(not any(re.search(r"@(main|master|latest)$", use) for use in release_uses), "release action references must not use mutable branches")
+
+for token in (
+    "python3 scripts/verify-version-sync.py",
+    "--expected-tag",
+    "--bundles deb,appimage",
+    "--bundles nsis",
+    "target/release/bundle",
+    "python3 scripts/verify-release-artifacts.py",
+    "python3 scripts/checksum-artifacts.py",
+    "SHA256SUMS",
+    "gh release create",
+    "--draft",
+    "gh release upload",
+    "if-no-files-found: error",
+):
+    check(token in release_text, f"release command or policy missing: {token}")
+check("secrets." not in release_text, "release workflow must not depend on repository secrets")
+check("pull_request_target" not in release_text, "release workflow must not use pull_request_target")
+
+# Dependabot and cargo-deny policy.
 dependabot = load_yaml(dependabot_text, "Dependabot")
 check(dependabot.get("version") == "2", "Dependabot schema version must be 2")
 updates = dependabot.get("updates", []) if isinstance(dependabot.get("updates", []), list) else []
@@ -156,13 +264,18 @@ if deny_text:
     check("MIT" in allowed and "Apache-2.0" in allowed, "cargo-deny license allow-list lacks core licenses")
 
 marker = re.compile(r"\b(TODO|FIXME|MOCK|PLACEHOLDER)\b", re.IGNORECASE)
-for path, text in ((CI_PATH, ci_text), (DEPENDABOT_PATH, dependabot_text), (DENY_PATH, deny_text)):
+for path, text in (
+    (CI_PATH, ci_text),
+    (RELEASE_PATH, release_text),
+    (DEPENDABOT_PATH, dependabot_text),
+    (DENY_PATH, deny_text),
+):
     check(marker.search(text) is None, f"unfinished marker in {path.relative_to(ROOT)}")
 
 if errors:
-    print(f"CI source checks: {len(errors)} failed / {checks} evaluated", file=sys.stderr)
+    print(f"CI/release source checks: {len(errors)} failed / {checks} evaluated", file=sys.stderr)
     for error in errors:
         print(f"- {error}", file=sys.stderr)
     raise SystemExit(1)
 
-print(f"CI source checks: {checks} passed")
+print(f"CI/release source checks: {checks} passed")

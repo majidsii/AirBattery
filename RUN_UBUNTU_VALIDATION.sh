@@ -24,7 +24,7 @@ sudo apt-get update
 sudo apt-get install -y \
   build-essential curl wget file pkg-config libssl-dev \
   libwebkit2gtk-4.1-dev libxdo-dev libayatana-appindicator3-dev librsvg2-dev \
-  libbluetooth-dev bluez dbus-user-session libglib2.0-bin gjs unzip python3-pil
+  libbluetooth-dev bluez dbus-user-session libglib2.0-bin gjs unzip
 
 echo "== Checking Node.js =="
 node --version
@@ -42,13 +42,6 @@ cargo --version
 echo "== Installing frontend dependencies =="
 npm --prefix apps/desktop install
 
-
-echo "== Fetching audited exact product artwork =="
-if [[ "${AIRBATTERY_SKIP_EXACT_ARTWORK_FETCH:-0}" == "1" ]]; then
-  echo "SKIP: exact artwork fetch disabled by AIRBATTERY_SKIP_EXACT_ARTWORK_FETCH=1"
-else
-  python3 scripts/fetch-exact-artwork.py
-fi
 
 echo "== Running universal runtime verification =="
 ./scripts/validate-universal-runtime.sh

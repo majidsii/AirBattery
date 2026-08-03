@@ -25,6 +25,7 @@ def check(condition: bool, message: str) -> None:
 
 required = [
     DESKTOP / "package.json",
+    DESKTOP / "tsconfig.contract.json",
     DESKTOP / "index.html",
     SRC / "App.vue",
     SRC / "main.ts",
@@ -44,31 +45,38 @@ required = [
 for path in required:
     check(path.is_file(), f"missing required desktop file: {path.relative_to(ROOT)}")
 
-CATALOG = SRC / "assets" / "device-artwork" / "catalog"
-svg_files = sorted(CATALOG.glob("*.svg")) if CATALOG.is_dir() else []
-check(CATALOG.is_dir(), "vector fallback artwork directory is missing")
-check(len(svg_files) == 87, f"expected 87 SVG fallback artwork assets, found {len(svg_files)}")
-for path in svg_files:
-    payload = path.read_text(encoding="utf-8")
-    check("<svg" in payload and "</svg>" in payload, f"invalid SVG fallback asset: {path.relative_to(ROOT)}")
-
-EXACT = SRC / "assets" / "device-artwork" / "exact"
-check(EXACT.is_dir(), "exact artwork directory is missing")
-check((EXACT / "README.md").is_file(), "exact artwork README is missing")
-check((EXACT / "ATTRIBUTION.generated.json").is_file(), "exact artwork attribution is missing")
-check((ROOT / "assets" / "exact-artwork" / "sources.json").is_file(), "exact artwork source manifest is missing")
-check((ROOT / "assets" / "exact-artwork" / "audit.json").is_file(), "exact artwork audit is missing")
-check(not (SRC / "assets" / "device-artwork" / "studio").exists(), "synthetic studio artwork must not be present")
-check(not (ROOT / "scripts" / "build-studio-artwork.py").exists(), "synthetic studio artwork generator must not be present")
+ARTWORK_ROOT = SRC / "assets" / "device-artwork"
+PRE_RENDERED = SRC / "domain" / "pre-rendered-artwork.ts"
+check(PRE_RENDERED.is_file(), "pre-rendered artwork registry is missing")
+check(not (ARTWORK_ROOT / "catalog").exists(), "unreviewed model-specific SVG catalog must not be present")
+check(not (ARTWORK_ROOT / "exact").exists(), "legacy exact-photo artwork must not be present")
+check(not (ARTWORK_ROOT / "studio").exists(), "synthetic studio artwork must not be present")
+check(not (ROOT / "scripts" / "fetch-exact-artwork.py").exists(), "runtime artwork downloader must not be present")
 
 catalog_source = (SRC / "domain" / "artwork-catalog.ts").read_text(encoding="utf-8")
-check("exactArtworkAssets" in catalog_source, "runtime artwork catalog does not merge exact photos")
-check("device-artwork/catalog" in catalog_source, "runtime artwork catalog is missing SVG fallbacks")
-check("device-artwork/studio" not in catalog_source, "runtime artwork catalog references forbidden synthetic studio assets")
-check((SRC / "domain" / "exact-artwork.generated.ts").is_file(), "generated exact artwork map is missing")
+component_source = (SRC / "components" / "DeviceArtwork.vue").read_text(encoding="utf-8")
+check("preRenderedArtworkAssets" in catalog_source, "runtime artwork catalog does not use the reviewed registry")
+check("candidate.modelKey !== normalizedKey" in catalog_source, "runtime artwork catalog does not enforce exact model identity")
+check("candidate.mode !== mode" in catalog_source, "runtime artwork catalog does not enforce exact component orientation")
+check("resolvePreRenderedArtworkAsset" in component_source, "device artwork does not use the exact review gate")
+check("device-artwork__generic-fallback" in component_source, "neutral inline category fallback is missing")
+check("device-artwork/catalog" not in catalog_source, "runtime artwork catalog references removed model drawings")
+check(".svg'" not in catalog_source, "runtime artwork catalog imports unreviewed SVG product drawings")
+check(".webp'" not in catalog_source, "runtime artwork catalog bundles unreviewed raster product art")
+check("mirrorHorizontally" not in catalog_source, "reviewed product artwork must not be mirrored")
+check("mirrored" not in component_source, "device artwork still mirrors an orientation")
 about_source = (SRC / "views" / "AboutView.vue").read_text(encoding="utf-8")
-check("ATTRIBUTION.generated.json" in about_source, "product photo attribution is not exposed in the About view")
-check("Product photo credits" in about_source, "product photo credit disclosure is missing")
+check("Exact-or-generic artwork" in about_source, "exact-or-generic artwork policy is missing from About")
+check("ATTRIBUTION.generated.json" not in about_source, "removed photo attribution is still imported")
+
+artwork_doc = (ROOT / "docs" / "DEVICE_ARTWORK_CATALOG.md").read_text(encoding="utf-8")
+check("exact-or-generic" in artwork_doc.lower(), "artwork catalog documentation does not describe the exact-or-generic policy")
+check("87 SVG files" not in artwork_doc, "artwork catalog documentation still claims the removed 87-SVG runtime catalog")
+check("registry starts empty" in artwork_doc.lower(), "artwork catalog documentation does not state the audited registry starts empty")
+
+changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+check(changelog.startswith("# Changelog"), "changelog must begin with its document title")
+check("Removed the former 87-file model-specific SVG catalog" in changelog, "changelog does not record removal of the misleading SVG catalog")
 
 
 TAURI = DESKTOP / "src-tauri"

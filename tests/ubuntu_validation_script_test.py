@@ -28,12 +28,12 @@ class UbuntuValidationScriptTests(unittest.TestCase):
         self.assertIn("./scripts/install-gnome-extension.sh", text)
         self.assertIn("airbattery@airbattery.github.io", text)
 
-    def test_entry_point_fetches_audited_exact_artwork_before_validation(self) -> None:
+    def test_entry_point_does_not_download_product_artwork_during_build(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
 
-        self.assertIn("python3 scripts/fetch-exact-artwork.py", text)
-        self.assertIn("AIRBATTERY_SKIP_EXACT_ARTWORK_FETCH", text)
-        self.assertIn("python3-pil", text)
+        self.assertNotIn("fetch-exact-artwork.py", text)
+        self.assertNotIn("AIRBATTERY_SKIP_EXACT_ARTWORK_FETCH", text)
+        self.assertNotIn("python3-pil", text)
 
 
 if __name__ == "__main__":

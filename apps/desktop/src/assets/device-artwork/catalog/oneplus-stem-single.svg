@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 130" fill="none" role="presentation"><defs>
-  <linearGradient id="body" x1="20" y1="10" x2="150" y2="120" gradientUnits="userSpaceOnUse"><stop stop-color="#20242a"/><stop offset="0.62" stop-color="#20242a"/><stop offset="1" stop-color="#d64a4a"/></linearGradient>
-  <linearGradient id="case" x1="25" y1="22" x2="150" y2="114" gradientUnits="userSpaceOnUse"><stop stop-color="#20242a"/><stop offset="1" stop-color="#d64a4a"/></linearGradient>
-</defs><ellipse cx="90" cy="118" rx="48" ry="7" fill="#07111f" opacity=".16"/><g transform="translate(35 0)"><g><path d="M30 43c0-18 13-30 31-30 18 0 29 11 29 27 0 17-13 30-31 30-17 0-29-10-29-27Z" fill="url(#body)" stroke="#6f7986"/><path d="M29 42c-10-2-15 4-15 11 0 8 7 13 17 9" fill="url(#body)" stroke="#6f7986"/><rect x="59" y="58" width="14" height="42" rx="7" fill="url(#body)" stroke="#6f7986"/><circle cx="45" cy="42" r="5" fill="#252d37"/></g></g></svg>
