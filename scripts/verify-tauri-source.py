@@ -77,6 +77,12 @@ for json_path in [TAURI / "tauri.conf.json", TAURI / "capabilities" / "default.j
             checks += 1
 
 check("airbattery-dbus" in (TAURI / "Cargo.toml").read_text(encoding="utf-8"), "Linux D-Bus dependency missing")
+workspace_cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+check(
+    workspace_cargo.get("workspace", {}).get("package", {}).get("repository")
+    == "https://github.com/majidsii/AirBattery",
+    "workspace repository URL does not point to majidsii/AirBattery",
+)
 
 if (TAURI / "capabilities" / "default.json").is_file():
     capability = json.loads((TAURI / "capabilities" / "default.json").read_text(encoding="utf-8"))

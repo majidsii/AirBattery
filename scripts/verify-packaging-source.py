@@ -62,6 +62,11 @@ if metainfo_path.is_file():
         check(launchable is not None and launchable.text == f"{IDENTIFIER}.desktop", "desktop-id launchable mismatch")
         check(root.find("description") is not None, "AppStream description missing")
         check(root.find("content_rating") is not None, "AppStream content rating missing")
+        urls = {(node.attrib.get("type"), node.text) for node in root.findall("url")}
+        check(("homepage", "https://github.com/majidsii/AirBattery") in urls,
+              "AppStream homepage URL mismatch")
+        check(("bugtracker", "https://github.com/majidsii/AirBattery/issues") in urls,
+              "AppStream bugtracker URL mismatch")
     except Exception as error:  # noqa: BLE001
         errors.append(f"invalid AppStream XML: {error}")
         checks += 1

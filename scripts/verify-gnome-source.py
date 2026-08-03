@@ -64,12 +64,14 @@ def main() -> int:
         return 1
 
     metadata = json.loads((EXTENSION / "metadata.json").read_text(encoding="utf-8"))
-    checks += 4
+    checks += 5
     require(metadata.get("uuid") == "airbattery@airbattery.github.io", "unexpected extension UUID", failures)
     require(metadata.get("shell-version") == ["50"], "shell-version must claim only GNOME 50", failures)
     require(metadata.get("settings-schema") == "io.github.airbattery.gnome",
             "metadata settings schema does not match the installed schema", failures)
     require("version" not in metadata, "deprecated metadata version must be omitted", failures)
+    require(metadata.get("url") == "https://github.com/majidsii/AirBattery",
+            "extension repository URL does not point to majidsii/AirBattery", failures)
 
     contract_root = ET.parse(EXTENSION / "dbus/io.github.airbattery.Service1.xml").getroot()
     interface = contract_root.find("interface")
