@@ -36,7 +36,7 @@ jobs:
           package-manager-cache: false
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
@@ -136,7 +136,7 @@ jobs:
           components: clippy,rustfmt
 
       - name: Cache Cargo data
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry/index/
@@ -192,7 +192,7 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Cache Cargo data
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry/index/
@@ -232,7 +232,7 @@ jobs:
           toolchain: 1.97.1
 
       - name: Cache Cargo data
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry/index/
