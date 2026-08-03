@@ -1,48 +1,50 @@
 # Testing
 
-## One-command gate
+## Ubuntu release-candidate gate
+
+Run the complete gate from the repository root on Ubuntu 26.04:
 
 ```bash
-./scripts/verify-foundation.sh
+CARGO_INCREMENTAL=0 \
+CARGO_PROFILE_DEV_DEBUG=0 \
+CARGO_PROFILE_TEST_DEBUG=0 \
+CARGO_BUILD_JOBS=2 \
+./RUN_UBUNTU_VALIDATION.sh
 ```
 
-The script runs every dependency-free gate first, scans production and documentation for unfinished markers, and then runs Rust formatting, linting, tests, and release build when Cargo is available.
+A successful run must finish with:
 
-In the current container the dependency-free portion passes and the script exits `127` at the explicit Cargo prerequisite check. That exit is not a Rust test result.
+```text
+VALIDATION, BUILD, AND GNOME EXTENSION INSTALL COMPLETED
+```
 
-## Executed dependency-free verification
+That marker is valid only for the commit printed in the same validation log.
 
-### Desktop domain and native bridge
+## Delivery-environment evidence
+
+The following commands were run on `feature/hybrid-native` after the battery-monitor, native-surface, and artwork-policy changes.
+
+### Desktop tests
 
 ```bash
-node --experimental-strip-types --test apps/desktop/tests/*.test.ts
+npm --prefix apps/desktop test
 ```
 
-Recorded result: 18 passed, 0 failed, 0 skipped.
+Recorded result: **45 passed, 0 failed**.
 
-### Strict TypeScript boundary
+The suite covers exact-or-generic artwork selection, truthful missing values, zero-percent handling, stale labels, active-device selection, AirPods slots, exact accessory presentation, native-surface selection, settings normalization, and visual priority.
+
+### GNOME extension tests
 
 ```bash
-TERM=dumb tsc --noEmit --target ES2022 --module ESNext \
-  --moduleResolution Bundler --strict --allowImportingTsExtensions \
-  apps/desktop/src/types/native-runtime.d.ts \
-  apps/desktop/src/domain/*.ts apps/desktop/src/api/backend.ts
+node --test apps/gnome-extension/tests/*.test.mjs
 ```
 
-Recorded result: exit status 0. This covers dependency-free domain logic and the typed Tauri boundary. Full Vue SFC checking still requires installed packages.
+Recorded result: **18 passed, 0 failed**.
 
-### GNOME snapshot logic
+The suite covers cached snapshot refresh, service recovery, overlap prevention, active-device visibility, fresh exact accessory evidence, component labels, compact percentages, input normalization, and AirPods `L/R/C` summaries.
 
-```bash
-node --test apps/gnome-extension/tests/snapshot.test.mjs
-node --check apps/gnome-extension/extension.js
-node --check apps/gnome-extension/service.js
-node --check apps/gnome-extension/prefs.js
-```
-
-Recorded result: 6 tests passed, 0 failed, 0 skipped; all four JavaScript syntax checks exited 0.
-
-### Static contracts
+### Dependency-free source contracts
 
 ```bash
 python3 scripts/verify_reference_models.py
@@ -50,65 +52,71 @@ python3 scripts/verify-desktop-source.py
 python3 scripts/verify-tauri-source.py
 python3 scripts/verify-dbus-source.py
 python3 scripts/verify-gnome-source.py
+python3 scripts/verify-packaging-source.py
 ```
 
-Recorded results:
+Recorded results for the current branch:
 
-- protocol reference checks: 4 passed;
-- desktop source checks: 188 passed;
-- Tauri source checks: 127 passed;
-- D-Bus source checks: 51 passed;
-- GNOME source checks: 47 passed.
+- reference models: **4 passed**;
+- desktop source: **315 passed**;
+- Tauri/native source: **156 passed** before the final documentation-only updates;
+- D-Bus source: **51 passed**;
+- GNOME source: **63 passed** after active-device and no-direct-Bluetooth checks;
+- packaging source: **54 passed**.
 
-These checks validate required files, JSON/TOML/XML contracts, exact D-Bus names, command registration, narrow Tauri permissions, GNOME 50 metadata, snapshot validation, missing UI states, marker scans, raw-address literals, shell execution, and panic-prone Rust calls. They do not replace compilation or runtime tests.
+The final delivery verification reruns these commands and records the fresh counts in the delivery manifest.
 
-## Authored Rust coverage
+### Release and Ubuntu-script tests
 
-Rust unit and integration tests cover:
+```bash
+python3 -m unittest \
+  tests/release_artifacts_test.py \
+  tests/ubuntu_validation_script_test.py
+```
 
-- percentage validation and unavailable serialization;
-- deterministic component resolution;
-- AirPods nibble, model, orientation, battery, and charging parsing;
-- generic battery normalization;
-- freshness expiry and intermittent case retention;
-- duplicate and out-of-order updates;
-- provider orchestration;
-- BlueZ property mapping;
-- diagnostic identifier hashing;
-- Tauri transactional state and independent device/backend change detection;
-- versioned D-Bus snapshots and unsupported-schema rejection.
+Recorded result: **13 passed, 0 failed**.
 
-Run when Cargo is available:
+## Required native checks on Ubuntu
+
+These checks require the Rust toolchain and native development libraries:
 
 ```bash
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo build --workspace --release
+npm --prefix apps/desktop run typecheck
+npm --prefix apps/desktop run build
+npm --prefix apps/desktop run tauri build -- --no-bundle
 ```
 
-## Frontend package gates
+The delivery sandbox does not contain Cargo or Ubuntu's native WebKit/BlueZ runtime, so those commands are never reported as passed there. They must be run against the exact imported commit on the user's Ubuntu host.
 
-Run after dependency installation:
+## Tauri launch modes
+
+Development:
 
 ```bash
-npm --prefix apps/desktop install
-npm --prefix apps/desktop run typecheck
-npm --prefix apps/desktop test
-npm --prefix apps/desktop run test:ui
-npm --prefix apps/desktop run build
+npm --prefix apps/desktop run tauri dev
 ```
 
-## Runtime and hardware gates
+Release binary:
 
-Automated source tests are not hardware evidence. Runtime validation must separately cover:
+```bash
+npm --prefix apps/desktop run tauri build -- --no-bundle
+./target/release/airbattery
+```
 
-- Ubuntu 26.04 GNOME 50 Wayland;
-- BlueZ restart, Bluetooth toggle, suspend/resume, and audio playback;
-- AirPods Pro 2020 hardware states listed in `docs/HARDWARE_TESTS.md`;
-- Windows 10 and Windows 11 BLE and tray behavior;
-- `.deb`, AppImage, NSIS, upgrade, and uninstall smoke tests.
+Running the desktop host directly with `cargo run` is not the supported frontend workflow because it can bypass Tauri CLI's dev-server/build coordination.
 
-## Environment limitation
+## Hardware and platform gates
 
-Cargo, frontend package dependencies, GNOME runtime tools, Windows, a Bluetooth adapter, and AirPods are unavailable in the current container. Rust compilation, Vue SFC build, native runtime, packaging, and hardware scenarios are therefore `NOT RUN`, not passed.
+Automated tests do not prove Bluetooth hardware behavior. Before merging into `main`, record:
+
+- Ubuntu 26.04, GNOME 50, Wayland;
+- AirPods Pro first-generation left/right/case behavior;
+- Bluetooth toggle, BlueZ restart, suspend/resume, disconnect/reconnect;
+- GNOME indicator visibility with zero and one active devices;
+- absence of a duplicate AppIndicator in GNOME;
+- Windows 10/11 compile, tray, sleep/resume, installer, and uninstall behavior when Windows release support is claimed.
+
+Use [`HARDWARE_TESTS.md`](HARDWARE_TESTS.md) for the exact matrix.

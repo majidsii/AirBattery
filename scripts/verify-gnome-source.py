@@ -128,6 +128,9 @@ def main() -> int:
         ("REFRESH_INTERVAL_MS = 3000" in refresh_source, "fallback interval must be exactly 3000 ms"),
         ("requestSnapshot" in refresh_source, "cached snapshot fallback is missing"),
         ("_inFlight" in refresh_source, "refresh overlap guard is missing"),
+        ("selectPanelDevice" in extension_source, "extension does not select an active panel device"),
+        ("this._indicator.visible = shouldShow" in extension_source,
+         "extension visibility is not tied to an active device"),
     )
     checks += len(source_requirements)
     for condition, message in source_requirements:
@@ -143,6 +146,10 @@ def main() -> int:
     require(FORBIDDEN_MARKERS.search(all_text) is None, "unfinished marker found in GNOME source", failures)
     require(RAW_ADDRESS.search(all_text) is None, "raw Bluetooth address found in GNOME source", failures)
     require("sudo" not in all_text, "GNOME extension scripts must not require root", failures)
+    for forbidden_bluetooth_token in ("bluetoothctl", "org.bluez", "ManufacturerData", "navigator.bluetooth"):
+        checks += 1
+        require(forbidden_bluetooth_token not in extension_source,
+                f"GNOME extension must not access Bluetooth directly: {forbidden_bluetooth_token}", failures)
     require("gnome-shell/extensions/$UUID" in (ROOT / "scripts/install-gnome-extension.sh").read_text(encoding="utf-8"),
             "installer does not target the per-user GNOME extension directory", failures)
 

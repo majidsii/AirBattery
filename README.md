@@ -1,84 +1,99 @@
 # AirBattery
 
-AirBattery is an in-development, local-first Bluetooth battery monitor for Linux and Windows. Its goal is an accurate, premium component-level experience for AirPods and other Bluetooth audio devices without fabricating unavailable values.
+AirBattery is a local-first Bluetooth battery monitor for Linux and Windows. It prioritizes truthful component data for earbuds and headsets: a missing value stays unavailable, stale values are labelled, and one aggregate percentage is never duplicated into invented left/right/case values.
 
-> The repository is at `0.1.0-alpha.1`. Source and dependency-free tests exist, but no native release artifact or hardware validation is complete yet.
+The current source version is `0.1.0-alpha.1`. Ubuntu 26.04/GNOME 50 is the primary runtime target; Windows 10/11 is supported by a separate native adapter and tray surface.
 
-## Current feature status
+## Current architecture
 
-| Capability | Source status | Validation status |
-|---|---|---|
-| Cross-platform battery domain | Implemented | Dependency-free/reference checks pass; Rust not compiled here |
-| Per-component provider resolver | Implemented | Fixture/reference tests authored; Cargo tests not run |
-| AirPods proximity-pairing parser | Implemented | Synthetic fixtures only; physical hardware unverified |
-| Linux BlueZ known-device/bounded refresh | Implemented | Runtime unverified |
-| Standard/aggregate battery normalization | Implemented | Source/reference checks pass |
-| Privacy-safe identifier handling | Implemented | Source/reference checks pass |
-| Vue/Tauri desktop UI and widget | Implemented in source | Node domain tests pass; SFC/native build unverified |
-| GNOME 50 top-bar companion | Implemented in source | 6 logic tests and source contracts pass; Shell runtime unverified |
-| Windows WinRT standard battery backend | Implemented in source | Windows compile/runtime unverified |
-| `.deb`, AppImage, GNOME ZIP, NSIS | Config/scripts authored | No artifact generated |
-
-## Principles
-
-- Unknown is not zero.
-- Stale data is never shown as live data.
-- Charging state is reported only when supported by reliable evidence.
-- Bluetooth is never enabled or reconfigured implicitly.
-- No telemetry, account, cloud dependency, or advertising is required.
-- Raw Bluetooth identifiers do not leave native backend boundaries.
-
-## Architecture
-
-A single Rust/Tauri process owns Bluetooth access, protocol providers, freshness, settings, diagnostics, and platform lifecycle. Vue consumes allow-listed commands/events. The GNOME extension consumes a versioned per-user D-Bus snapshot and contains no Bluetooth parsing or polling.
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/DECISIONS.md`](docs/DECISIONS.md).
-
-## Development
-
-On a network-enabled development system:
-
-```bash
-./scripts/bootstrap-rust.sh
-npm --prefix apps/desktop install
-./scripts/verify-foundation.sh
-npm --prefix apps/desktop run typecheck
-npm --prefix apps/desktop run build
+```text
+Bluetooth / vendor protocol
+          ↓
+Native provider adapters
+          ↓
+Normalized battery registry + freshness cache
+          ↓
+Platform snapshot service
+   ┌──────┴────────┐
+Tauri desktop   Linux D-Bus
+                    ↓
+              GNOME extension
 ```
 
-Linux diagnostic commands after a successful Rust build:
+- The Rust backend owns Bluetooth, protocol parsing, freshness, and device selection.
+- The Vue desktop and GNOME extension only render normalized snapshots.
+- On GNOME, the Shell extension replaces the Linux AppIndicator; Windows keeps its native notification-area icon.
+- The GNOME indicator is hidden when no active supported Bluetooth device exists.
+- Exact AirPods values use the Apple accessory channel when available; passive advertisements remain explicitly approximate.
+- Product artwork follows an exact-or-generic policy. Unreviewed photos, AI lookalikes, and approximate model substitutions are rejected.
+
+## Verification status
+
+| Area | Status |
+|---|---|
+| Desktop domain tests | 45 passing in the delivery environment |
+| GNOME extension tests | 18 passing in the delivery environment |
+| Dependency-free source contracts | Passing |
+| Release/Ubuntu script tests | 13 passing |
+| Rust format, Clippy, workspace tests, Tauri build | Must be run on the Ubuntu development host for this branch |
+| Physical AirPods battery validation | Must be repeated on the exact delivery commit |
+| Windows runtime and installer smoke test | Platform-gated; not yet recorded |
+
+See [`docs/TESTING.md`](docs/TESTING.md) and [`docs/HARDWARE_TESTS.md`](docs/HARDWARE_TESTS.md). A green source test is not treated as hardware evidence.
+
+## Run in development
+
+Install dependencies once, then use Tauri's development command so the WebView and Vite server are started together:
 
 ```bash
-cargo run -p airbattery-cli -- status
-cargo run -p airbattery-cli -- scan --seconds 20 --json
+npm --prefix apps/desktop install
+npm --prefix apps/desktop run tauri dev
+```
+
+Do not use `cargo run --manifest-path apps/desktop/src-tauri/Cargo.toml` as the normal desktop launch command. That bypasses Tauri CLI's frontend lifecycle and can leave the WebView pointing at an unavailable development URL.
+
+## Build the native application
+
+```bash
+npm --prefix apps/desktop run build
+npm --prefix apps/desktop run tauri build -- --no-bundle
+./target/release/airbattery
+```
+
+For the complete Ubuntu gate, including source checks and GNOME extension installation:
+
+```bash
+CARGO_INCREMENTAL=0 \
+CARGO_PROFILE_DEV_DEBUG=0 \
+CARGO_PROFILE_TEST_DEBUG=0 \
+CARGO_BUILD_JOBS=2 \
+./RUN_UBUNTU_VALIDATION.sh
 ```
 
 Do not build or run AirBattery as root.
 
-## Installation status
+## Project rules
 
-No installable AirBattery release exists at this checkpoint. Intended commands and honest artifact prerequisites are documented in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
-
-## Privacy
-
-AirBattery is local-first and has no telemetry by default. Bluetooth addresses are retained only inside native collection boundaries and transformed into privacy-safe identifiers before reaching UI, D-Bus, settings, or diagnostic exports.
+- Unknown is not zero.
+- `127` and `255` are unavailable sentinels, not percentages.
+- The last verified component value keeps its original timestamp and may become stale; it is not silently relabelled as live.
+- Bluetooth is never enabled, paired, or reconfigured implicitly.
+- Raw Bluetooth identifiers do not cross into UI, D-Bus snapshots, settings, or exported diagnostics.
+- Exact product art must match the exact model and include auditable authorship and redistribution terms.
 
 ## Documentation
 
-- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — exact state, evidence, blockers, and next action
-- [`docs/BUILDING.md`](docs/BUILDING.md)
-- [`docs/INSTALLATION.md`](docs/INSTALLATION.md)
-- [`docs/BLUETOOTH_BACKENDS.md`](docs/BLUETOOTH_BACKENDS.md)
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/AIRPODS_PROTOCOL.md`](docs/AIRPODS_PROTOCOL.md)
+- [`docs/ARTWORK_PIPELINE.md`](docs/ARTWORK_PIPELINE.md)
 - [`docs/GNOME_EXTENSION.md`](docs/GNOME_EXTENSION.md)
-- [`docs/WINDOWS_BACKEND.md`](docs/WINDOWS_BACKEND.md)
+- [`docs/BLUETOOTH_BACKENDS.md`](docs/BLUETOOTH_BACKENDS.md)
 - [`docs/TESTING.md`](docs/TESTING.md)
 - [`docs/HARDWARE_TESTS.md`](docs/HARDWARE_TESTS.md)
+- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)
 
-## Contributing and release status
+## Repository and license
 
-Public contribution, security, release, and support documents are being prepared before the first release. Support claims must always match recorded test evidence.
+Canonical repository: `https://github.com/majidsii/AirBattery`
 
-## License
-
-MIT. Protocol research attribution and clean-room notes are recorded in `crates/protocol-airpods/NOTICE.md`.
+AirBattery is MIT licensed. Protocol research attribution and clean-room notes are recorded in `crates/protocol-airpods/NOTICE.md`.
