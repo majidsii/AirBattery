@@ -12,8 +12,8 @@ workspace = true
 [dependencies]
 time.workspace = true
 thiserror.workspace = true
-shared-models = { path = "../shared-models" }
-device-protocols = { path = "../device-protocols" }
+shared-models = { path = "../shared-models", version = "=0.1.0-alpha.1" }
+device-protocols = { path = "../device-protocols", version = "=0.1.0-alpha.1" }
 
 [dev-dependencies]
 async-trait.workspace = true

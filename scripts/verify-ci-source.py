@@ -286,6 +286,51 @@ if deny_text:
     allowed = deny.get("licenses", {}).get("allow", [])
     check("MIT" in allowed and "Apache-2.0" in allowed, "cargo-deny license allow-list lacks core licenses")
 
+# Local path dependencies must also carry the exact workspace version. This
+# keeps cargo-deny wildcard enforcement enabled while allowing unpublished
+# workspace crates to resolve from local paths.
+root_cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+workspace_version = root_cargo.get("workspace", {}).get("package", {}).get("version")
+expected_path_version = f"={workspace_version}" if workspace_version else ""
+manifest_paths = [
+    *sorted((ROOT / "crates").glob("*/Cargo.toml")),
+    ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml",
+]
+for manifest_path in manifest_paths:
+    if not manifest_path.is_file():
+        continue
+    try:
+        manifest = tomllib.loads(manifest_path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as error:
+        errors.append(f"invalid Cargo manifest {manifest_path.relative_to(ROOT)}: {error}")
+        continue
+
+    dependency_tables: list[tuple[str, dict[str, Any]]] = []
+    for section_name in ("dependencies", "dev-dependencies", "build-dependencies"):
+        section = manifest.get(section_name, {})
+        if isinstance(section, dict):
+            dependency_tables.append((section_name, section))
+    targets = manifest.get("target", {})
+    if isinstance(targets, dict):
+        for target_name, target_config in targets.items():
+            if not isinstance(target_config, dict):
+                continue
+            for section_name in ("dependencies", "dev-dependencies", "build-dependencies"):
+                section = target_config.get(section_name, {})
+                if isinstance(section, dict):
+                    dependency_tables.append((f"target.{target_name}.{section_name}", section))
+
+    for section_name, dependencies in dependency_tables:
+        for dependency_name, dependency_spec in dependencies.items():
+            if isinstance(dependency_spec, dict) and "path" in dependency_spec:
+                check(
+                    dependency_spec.get("version") == expected_path_version,
+                    (
+                        f"{manifest_path.relative_to(ROOT)} {section_name} dependency "
+                        f"{dependency_name} must use version {expected_path_version!r} with its path"
+                    ),
+                )
+
 marker = re.compile(r"\b(TODO|FIXME|MOCK|PLACEHOLDER)\b", re.IGNORECASE)
 for path, text in (
     (CI_PATH, ci_text),

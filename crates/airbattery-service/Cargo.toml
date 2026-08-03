@@ -10,9 +10,9 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-airbattery-core = { path = "../airbattery-core" }
-device-protocols = { path = "../device-protocols" }
-shared-models = { path = "../shared-models" }
+airbattery-core = { path = "../airbattery-core", version = "=0.1.0-alpha.1" }
+device-protocols = { path = "../device-protocols", version = "=0.1.0-alpha.1" }
+shared-models = { path = "../shared-models", version = "=0.1.0-alpha.1" }
 time.workspace = true
 thiserror.workspace = true
 
