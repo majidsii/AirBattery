@@ -13,6 +13,9 @@ export interface PreRenderedArtworkAsset {
   mode: PreRenderedArtworkMode;
   license: string;
   author: string;
+  source: string;
+  reviewedAt: string;
+  renderMethod: 'offline-3d';
 }
 
 export interface PreRenderedArtworkAssetSet {

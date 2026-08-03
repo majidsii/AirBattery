@@ -133,7 +133,7 @@ test('unknown devices use the Bluetooth fallback', () => {
   assert.equal(selectDeviceArtwork(device()), 'bluetooth');
 });
 
-test('known model names select exact artwork even when an older backend omits visual metadata', () => {
+test('known model names preserve exact model keys when an older backend omits visual metadata', () => {
   assert.equal(selectDeviceArtwork(device({
     displayName: 'SHABIN',
     model: 'AirPods Pro (1st generation)',
@@ -148,7 +148,7 @@ test('known model names select exact artwork even when an older backend omits vi
 });
 
 
-test('exact artwork keys resolve to distinct physical silhouettes', () => {
+test('exact model keys remain distinct across supported product families', () => {
   assert.equal(resolveArtworkVariant('airpods-pro-1'), 'airpodsPro');
   assert.equal(resolveArtworkVariant('airpods-pro-2'), 'airpodsPro');
   assert.equal(resolveArtworkVariant('airpods-generic'), 'airpodsClassic');

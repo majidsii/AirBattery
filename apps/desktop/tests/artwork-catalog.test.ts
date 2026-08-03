@@ -34,6 +34,9 @@ test('pre-rendered assets are exact-model only and start behind an empty review 
   assert.match(catalogSource, /preRenderedArtworkAssets/);
   assert.match(catalogSource, /candidate\.modelKey !== normalizedKey/);
   assert.match(catalogSource, /candidate\.mode !== mode/);
+  assert.match(catalogSource, /candidate\.renderMethod !== 'offline-3d'/);
+  assert.match(catalogSource, /candidate\.source\.trim\(\)/);
+  assert.match(catalogSource, /REVIEW_DATE\.test\(candidate\.reviewedAt\)/);
   assert.match(registrySource, /preRenderedArtworkAssets: PreRenderedArtworkAssetMap = \{\}/);
   assert.doesNotMatch(registrySource, /\.webp'/);
   assert.doesNotMatch(componentSource, /exact-photo/);

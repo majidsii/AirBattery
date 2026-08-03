@@ -1,5 +1,7 @@
 import { preRenderedArtworkAssets } from './pre-rendered-artwork.ts';
 
+const REVIEW_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 export type DeviceArtworkMode = 'left' | 'right' | 'pair' | 'case';
 
 export interface DeviceArtworkAsset {
@@ -20,7 +22,9 @@ export function resolvePreRenderedArtworkAsset(
   const normalizedKey = artworkKey.trim().toLowerCase();
   const candidate = preRenderedArtworkAssets[normalizedKey]?.[mode];
   if (!candidate || candidate.modelKey !== normalizedKey || candidate.mode !== mode) return null;
+  if (candidate.renderMethod !== 'offline-3d') return null;
   if (!candidate.src.trim() || !candidate.license.trim() || !candidate.author.trim()) return null;
+  if (!candidate.source.trim() || !REVIEW_DATE.test(candidate.reviewedAt)) return null;
   return {
     src: candidate.src,
     sourceKind: 'pre-rendered-3d',
