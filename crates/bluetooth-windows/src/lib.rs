@@ -113,7 +113,9 @@ mod native {
         let known_devices = collect_known_devices().await?;
         let advertisements = if powered == Some(true) {
             match discovery_window {
-                Some(window) => collect_advertisements(window).await?,
+                Some(window) => {
+                    tokio::task::block_in_place(|| collect_advertisements(window))?
+                }
                 None => Vec::new(),
             }
         } else {
@@ -195,7 +197,7 @@ mod native {
         Ok(known_devices)
     }
 
-    async fn collect_advertisements(
+    fn collect_advertisements(
         window: Duration,
     ) -> Result<Vec<WindowsAdvertisement>, WindowsBluetoothError> {
         let watcher = BluetoothLEAdvertisementWatcher::new().map_err(native_error)?;
@@ -218,7 +220,7 @@ mod native {
         });
         let token = watcher.Received(&handler).map_err(native_error)?;
         watcher.Start().map_err(native_error)?;
-        tokio::time::sleep(window).await;
+        std::thread::sleep(window);
         let stop_result = watcher.Stop().map_err(native_error);
         let remove_result = watcher.RemoveReceived(token).map_err(native_error);
         stop_result?;

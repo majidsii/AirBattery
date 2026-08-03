@@ -188,6 +188,22 @@ check(
     "&Option<BluetoothLEAdvertisementReceivedEventArgs>" not in windows_bluetooth_text,
     "Windows advertisement callback must not use the pre-0.62 Option reference signature",
 )
+check(
+    "tokio::task::block_in_place(|| collect_advertisements(window))" in windows_bluetooth_text,
+    "Windows advertisement scan must isolate non-Send WinRT handlers from async suspension",
+)
+check(
+    "async fn collect_advertisements(" not in windows_bluetooth_text,
+    "Windows advertisement watcher must be contained in a synchronous helper",
+)
+check(
+    "std::thread::sleep(window);" in windows_bluetooth_text,
+    "Windows synchronous advertisement helper must own the complete scan window",
+)
+check(
+    "tokio::time::sleep(window).await;" not in windows_bluetooth_text,
+    "Windows WinRT event handler must not live across an async sleep",
+)
 check("contents: write" not in ci_text, "CI workflow must not request contents write")
 check("pull-requests: write" not in ci_text, "CI workflow must not request pull-request write")
 
