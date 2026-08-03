@@ -65,12 +65,21 @@ fn normalized_address(address: &str) -> String {
 /// Synchronizes long-lived Apple accessory monitors with the authoritative set
 /// of currently connected Apple audio candidates.
 ///
-/// Existing monitors are retained, new addresses start one monitor, and stale
-/// addresses receive a cancellation signal so their sockets and retry loops are
-/// released. Address keys are normalized to avoid duplicate monitors caused by
-/// casing differences between platform snapshots.
-pub async fn sync_apple_accessory_monitors(addresses: &BTreeSet<String>) {
-    let desired = addresses
+/// Existing monitors are retained while their device remains connected, even
+/// when a later scan temporarily lacks Apple advertisement identity. New
+/// monitors are created only for confirmed candidates. Disconnected addresses
+/// receive a cancellation signal so their sockets and retry loops are released.
+/// Address keys are normalized to avoid duplicate monitors caused by casing
+/// differences between platform snapshots.
+pub async fn sync_apple_accessory_monitors(
+    connected_addresses: &BTreeSet<String>,
+    candidate_addresses: &BTreeSet<String>,
+) {
+    let connected = connected_addresses
+        .iter()
+        .map(|address| normalized_address(address))
+        .collect::<BTreeSet<_>>();
+    let candidates = candidate_addresses
         .iter()
         .map(|address| normalized_address(address))
         .collect::<BTreeSet<_>>();
@@ -78,7 +87,7 @@ pub async fn sync_apple_accessory_monitors(addresses: &BTreeSet<String>) {
     let mut entries = monitors().lock().await;
     let stale = entries
         .keys()
-        .filter(|address| !desired.contains(*address))
+        .filter(|address| !connected.contains(*address))
         .cloned()
         .collect::<Vec<_>>();
     for address in stale {
@@ -87,8 +96,8 @@ pub async fn sync_apple_accessory_monitors(addresses: &BTreeSet<String>) {
         }
     }
 
-    for address in desired {
-        if entries.contains_key(&address) {
+    for address in candidates {
+        if !connected.contains(&address) || entries.contains_key(&address) {
             continue;
         }
         let (entry, receiver) = MonitorEntry::new();
