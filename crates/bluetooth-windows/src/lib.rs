@@ -51,7 +51,13 @@ pub async fn collect_devices(
 ) -> Result<WindowsCollection, WindowsBluetoothError> {
     #[cfg(target_os = "windows")]
     {
-        return native::collect_devices(discovery_window).await;
+        return tokio::task::spawn_blocking(move || {
+            futures::executor::block_on(native::collect_devices(discovery_window))
+        })
+        .await
+        .map_err(|error| {
+            WindowsBluetoothError::Native(format!("Windows Bluetooth worker failed: {error}"))
+        })?;
     }
     #[cfg(not(target_os = "windows"))]
     {
@@ -113,7 +119,7 @@ mod native {
         let known_devices = collect_known_devices().await?;
         let advertisements = if powered == Some(true) {
             match discovery_window {
-                Some(window) => collect_advertisements(window).await?,
+                Some(window) => collect_advertisements(window)?,
                 None => Vec::new(),
             }
         } else {
@@ -195,7 +201,7 @@ mod native {
         Ok(known_devices)
     }
 
-    async fn collect_advertisements(
+    fn collect_advertisements(
         window: Duration,
     ) -> Result<Vec<WindowsAdvertisement>, WindowsBluetoothError> {
         let watcher = BluetoothLEAdvertisementWatcher::new().map_err(native_error)?;
@@ -204,21 +210,21 @@ mod native {
             .map_err(native_error)?;
         let captured = Arc::new(Mutex::new(Vec::new()));
         let callback_values = Arc::clone(&captured);
-        let handler = TypedEventHandler::new(
-            move |_sender: &Option<BluetoothLEAdvertisementWatcher>,
-                  args: &Option<BluetoothLEAdvertisementReceivedEventArgs>| {
-                if let Some(args) = args
-                    && let Some(value) = advertisement_from_event(args)
-                    && let Ok(mut values) = callback_values.lock()
-                {
-                    values.push(value);
-                }
-                Ok(())
-            },
-        );
+        let handler = TypedEventHandler::<
+            BluetoothLEAdvertisementWatcher,
+            BluetoothLEAdvertisementReceivedEventArgs,
+        >::new(move |_sender, args| {
+            if let Some(args) = args.as_ref()
+                && let Some(value) = advertisement_from_event(args)
+                && let Ok(mut values) = callback_values.lock()
+            {
+                values.push(value);
+            }
+            Ok(())
+        });
         let token = watcher.Received(&handler).map_err(native_error)?;
         watcher.Start().map_err(native_error)?;
-        tokio::time::sleep(window).await;
+        std::thread::sleep(window);
         let stop_result = watcher.Stop().map_err(native_error);
         let remove_result = watcher.RemoveReceived(token).map_err(native_error);
         stop_result?;
@@ -360,5 +366,17 @@ mod native {
 
     fn native_error(error: windows::core::Error) -> WindowsBluetoothError {
         WindowsBluetoothError::Native(error.to_string())
+    }
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod windows_send_tests {
+    use super::collect_devices;
+
+    fn assert_send<T: Send>(_: T) {}
+
+    #[test]
+    fn collection_future_is_send() {
+        assert_send(collect_devices(None));
     }
 }

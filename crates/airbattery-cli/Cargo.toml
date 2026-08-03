@@ -10,11 +10,11 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-bluetooth-linux = { path = "../bluetooth-linux" }
+bluetooth-linux = { path = "../bluetooth-linux", version = "=0.1.0-alpha.1" }
 clap.workspace = true
-diagnostics = { path = "../diagnostics" }
+diagnostics = { path = "../diagnostics", version = "=0.1.0-alpha.1" }
 hex.workspace = true
-protocol-airpods = { path = "../protocol-airpods" }
+protocol-airpods = { path = "../protocol-airpods", version = "=0.1.0-alpha.1" }
 serde_json.workspace = true
 time.workspace = true
 tokio.workspace = true

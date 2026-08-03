@@ -10,11 +10,12 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-airbattery-service = { path = "../airbattery-service" }
-device-protocols = { path = "../device-protocols" }
-diagnostics = { path = "../diagnostics" }
-protocol-airpods = { path = "../protocol-airpods" }
-shared-models = { path = "../shared-models" }
+airbattery-service = { path = "../airbattery-service", version = "=0.1.0-alpha.1" }
+device-protocols = { path = "../device-protocols", version = "=0.1.0-alpha.1" }
+diagnostics = { path = "../diagnostics", version = "=0.1.0-alpha.1" }
+futures.workspace = true
+protocol-airpods = { path = "../protocol-airpods", version = "=0.1.0-alpha.1" }
+shared-models = { path = "../shared-models", version = "=0.1.0-alpha.1" }
 thiserror.workspace = true
 time.workspace = true
 tokio.workspace = true

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 import tomllib
@@ -16,6 +17,9 @@ CI_PATH = ROOT / ".github/workflows/ci.yml"
 RELEASE_PATH = ROOT / ".github/workflows/release.yml"
 DEPENDABOT_PATH = ROOT / ".github/dependabot.yml"
 DENY_PATH = ROOT / "deny.toml"
+DESKTOP_PACKAGE_PATH = ROOT / "apps/desktop/package.json"
+WINDOWS_BLUETOOTH_PATH = ROOT / "crates/bluetooth-windows/src/lib.rs"
+WINDOWS_BLUETOOTH_CARGO_PATH = ROOT / "crates/bluetooth-windows/Cargo.toml"
 errors: list[str] = []
 checks = 0
 
@@ -84,6 +88,9 @@ ci_text = require(CI_PATH)
 release_text = require(RELEASE_PATH)
 dependabot_text = require(DEPENDABOT_PATH)
 deny_text = require(DENY_PATH)
+desktop_package_text = require(DESKTOP_PACKAGE_PATH)
+windows_bluetooth_text = require(WINDOWS_BLUETOOTH_PATH)
+windows_bluetooth_cargo_text = require(WINDOWS_BLUETOOTH_CARGO_PATH)
 ci = load_yaml(ci_text, "CI")
 release = load_yaml(release_text, "release")
 
@@ -134,6 +141,10 @@ check("actions/cache@v5" in ci_uses, "CI must use actions/cache@v5")
 check(not any(re.search(r"@(main|master|latest)$", use) for use in ci_uses), "CI action references must not use mutable branches")
 check(not any(use.startswith("actions/upload-artifact") for use in ci_uses), "CI validation must not upload release artifacts")
 
+for workflow_name, workflow_text in (("CI", ci_text), ("release", release_text)):
+    check("PyYAML==6.0.3" in workflow_text, f"{workflow_name} workflow must install pinned PyYAML")
+    check("Pillow==12.3.0" in workflow_text, f"{workflow_name} workflow must install pinned Pillow")
+
 for token in (
     "cargo fmt --all -- --check",
     "cargo clippy --workspace --all-targets -- -D warnings",
@@ -141,7 +152,6 @@ for token in (
     "cargo build --workspace --release",
     "npm run typecheck",
     "npm run test",
-    "npm run test:ui",
     "npm run build",
     "python3 scripts/verify-ci-source.py",
     "python3 scripts/verify-release-source.py",
@@ -156,6 +166,67 @@ check(
 check("cargo deny check" in ci_text, "cargo-deny audit missing")
 check('rust-version: "1.97.1"' in ci_text, "cargo-deny Rust version pin missing")
 check("npm audit" in ci_text, "npm audit missing")
+check("npm run test:ui" not in ci_text, "CI must not run Node test suites through Vitest")
+if desktop_package_text:
+    desktop_package = json.loads(desktop_package_text)
+    scripts = desktop_package.get("scripts", {})
+    dev_dependencies = desktop_package.get("devDependencies", {})
+    check("test:ui" not in scripts, "desktop package must not expose an empty Vitest suite")
+    check("vitest" not in dev_dependencies, "desktop package must not depend on unused Vitest")
+check(
+    re.search(
+        r"TypedEventHandler::<\s*BluetoothLEAdvertisementWatcher,\s*"
+        r"BluetoothLEAdvertisementReceivedEventArgs,\s*>::new",
+        windows_bluetooth_text,
+    )
+    is not None,
+    "Windows advertisement handler must bind sender and event argument types explicitly",
+)
+check(
+    "args.as_ref()" in windows_bluetooth_text,
+    "Windows advertisement callback must unwrap windows_core::Ref with as_ref()",
+)
+check(
+    "&Option<BluetoothLEAdvertisementReceivedEventArgs>" not in windows_bluetooth_text,
+    "Windows advertisement callback must not use the pre-0.62 Option reference signature",
+)
+check(
+    "tokio::task::spawn_blocking(move ||" in windows_bluetooth_text,
+    "Windows backend must isolate non-Send WinRT work on a blocking worker",
+)
+check(
+    "futures::executor::block_on(native::collect_devices(discovery_window))"
+    in windows_bluetooth_text,
+    "Windows worker must drive the complete WinRT collection future",
+)
+check(
+    "futures.workspace = true" in windows_bluetooth_cargo_text,
+    "Windows Bluetooth crate must enable the futures executor",
+)
+check(
+    "assert_send(collect_devices(None));" in windows_bluetooth_text,
+    "Windows collection API must compile-check as a Send future",
+)
+check(
+    "tokio::task::block_in_place" not in windows_bluetooth_text,
+    "Windows Bluetooth backend must not retain nested block_in_place calls",
+)
+check(
+    "Some(window) => collect_advertisements(window)?" in windows_bluetooth_text,
+    "Windows worker must call the synchronous advertisement helper directly",
+)
+check(
+    "async fn collect_advertisements(" not in windows_bluetooth_text,
+    "Windows advertisement watcher must be contained in a synchronous helper",
+)
+check(
+    "std::thread::sleep(window);" in windows_bluetooth_text,
+    "Windows synchronous advertisement helper must own the complete scan window",
+)
+check(
+    "tokio::time::sleep(window).await;" not in windows_bluetooth_text,
+    "Windows WinRT event handler must not live across an async sleep",
+)
 check("contents: write" not in ci_text, "CI workflow must not request contents write")
 check("pull-requests: write" not in ci_text, "CI workflow must not request pull-request write")
 
@@ -262,6 +333,51 @@ if deny_text:
     check(deny.get("sources", {}).get("unknown-git") == "deny", "cargo-deny must deny unknown git sources")
     allowed = deny.get("licenses", {}).get("allow", [])
     check("MIT" in allowed and "Apache-2.0" in allowed, "cargo-deny license allow-list lacks core licenses")
+
+# Local path dependencies must also carry the exact workspace version. This
+# keeps cargo-deny wildcard enforcement enabled while allowing unpublished
+# workspace crates to resolve from local paths.
+root_cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+workspace_version = root_cargo.get("workspace", {}).get("package", {}).get("version")
+expected_path_version = f"={workspace_version}" if workspace_version else ""
+manifest_paths = [
+    *sorted((ROOT / "crates").glob("*/Cargo.toml")),
+    ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml",
+]
+for manifest_path in manifest_paths:
+    if not manifest_path.is_file():
+        continue
+    try:
+        manifest = tomllib.loads(manifest_path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as error:
+        errors.append(f"invalid Cargo manifest {manifest_path.relative_to(ROOT)}: {error}")
+        continue
+
+    dependency_tables: list[tuple[str, dict[str, Any]]] = []
+    for section_name in ("dependencies", "dev-dependencies", "build-dependencies"):
+        section = manifest.get(section_name, {})
+        if isinstance(section, dict):
+            dependency_tables.append((section_name, section))
+    targets = manifest.get("target", {})
+    if isinstance(targets, dict):
+        for target_name, target_config in targets.items():
+            if not isinstance(target_config, dict):
+                continue
+            for section_name in ("dependencies", "dev-dependencies", "build-dependencies"):
+                section = target_config.get(section_name, {})
+                if isinstance(section, dict):
+                    dependency_tables.append((f"target.{target_name}.{section_name}", section))
+
+    for section_name, dependencies in dependency_tables:
+        for dependency_name, dependency_spec in dependencies.items():
+            if isinstance(dependency_spec, dict) and "path" in dependency_spec:
+                check(
+                    dependency_spec.get("version") == expected_path_version,
+                    (
+                        f"{manifest_path.relative_to(ROOT)} {section_name} dependency "
+                        f"{dependency_name} must use version {expected_path_version!r} with its path"
+                    ),
+                )
 
 marker = re.compile(r"\b(TODO|FIXME|MOCK|PLACEHOLDER)\b", re.IGNORECASE)
 for path, text in (

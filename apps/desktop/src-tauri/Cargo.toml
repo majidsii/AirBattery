@@ -24,14 +24,14 @@ workspace = true
 tauri-build = { version = "=2.6.3", features = [] }
 
 [dependencies]
-airbattery-core = { path = "../../../crates/airbattery-core" }
-airbattery-service = { path = "../../../crates/airbattery-service" }
-airbattery-settings = { path = "../../../crates/airbattery-settings" }
-diagnostics = { path = "../../../crates/diagnostics" }
-device-protocols = { path = "../../../crates/device-protocols" }
-protocol-airpods = { path = "../../../crates/protocol-airpods" }
-protocol-generic-battery = { path = "../../../crates/protocol-generic-battery" }
-shared-models = { path = "../../../crates/shared-models" }
+airbattery-core = { path = "../../../crates/airbattery-core", version = "=0.1.0-alpha.1" }
+airbattery-service = { path = "../../../crates/airbattery-service", version = "=0.1.0-alpha.1" }
+airbattery-settings = { path = "../../../crates/airbattery-settings", version = "=0.1.0-alpha.1" }
+diagnostics = { path = "../../../crates/diagnostics", version = "=0.1.0-alpha.1" }
+device-protocols = { path = "../../../crates/device-protocols", version = "=0.1.0-alpha.1" }
+protocol-airpods = { path = "../../../crates/protocol-airpods", version = "=0.1.0-alpha.1" }
+protocol-generic-battery = { path = "../../../crates/protocol-generic-battery", version = "=0.1.0-alpha.1" }
+shared-models = { path = "../../../crates/shared-models", version = "=0.1.0-alpha.1" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -46,8 +46,8 @@ tauri-plugin-single-instance = "=2.4.3"
 tauri-plugin-window-state = "=2.4.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-airbattery-dbus = { path = "../../../crates/airbattery-dbus" }
-bluetooth-linux = { path = "../../../crates/bluetooth-linux" }
+airbattery-dbus = { path = "../../../crates/airbattery-dbus", version = "=0.1.0-alpha.1" }
+bluetooth-linux = { path = "../../../crates/bluetooth-linux", version = "=0.1.0-alpha.1" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-bluetooth-windows = { path = "../../../crates/bluetooth-windows" }
+bluetooth-windows = { path = "../../../crates/bluetooth-windows", version = "=0.1.0-alpha.1" }
