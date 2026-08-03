@@ -80,7 +80,7 @@
 
 **Files:**
 - Modify: `apps/desktop/src/domain/artwork-catalog.ts`
-- Modify: `apps/desktop/src/domain/exact-artwork.generated.ts`
+- Modify: `apps/desktop/src/domain/pre-rendered-artwork.ts`
 - Modify: `apps/desktop/src/components/DeviceArtwork.vue`
 - Modify: `apps/desktop/tests/artwork-catalog.test.ts`
 - Modify: `apps/desktop/tests/artwork-svg-contract.test.ts`

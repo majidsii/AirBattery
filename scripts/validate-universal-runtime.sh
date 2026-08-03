@@ -17,8 +17,6 @@ run node --check apps/gnome-extension/refresh-controller.js
 run node --check apps/gnome-extension/service.js
 run node --check apps/gnome-extension/prefs.js
 run python3 scripts/verify_reference_models.py
-run python3 -m unittest scripts/tests/test_exact_artwork.py
-run python3 scripts/verify-exact-artwork.py
 run python3 scripts/verify-desktop-source.py
 run python3 scripts/verify-tauri-source.py
 run python3 scripts/verify-dbus-source.py
