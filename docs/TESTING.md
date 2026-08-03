@@ -58,8 +58,8 @@ python3 scripts/verify-packaging-source.py
 Recorded results for the current branch:
 
 - reference models: **4 passed**;
-- desktop source: **315 passed**;
-- Tauri/native source: **156 passed** before the final documentation-only updates;
+- desktop source: **232 passed**;
+- Tauri/native source: **156 passed**;
 - D-Bus source: **51 passed**;
 - GNOME source: **63 passed** after active-device and no-direct-Bluetooth checks;
 - packaging source: **54 passed**.
