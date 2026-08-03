@@ -113,9 +113,7 @@ mod native {
         let known_devices = collect_known_devices().await?;
         let advertisements = if powered == Some(true) {
             match discovery_window {
-                Some(window) => {
-                    tokio::task::block_in_place(|| collect_advertisements(window))?
-                }
+                Some(window) => tokio::task::block_in_place(|| collect_advertisements(window))?,
                 None => Vec::new(),
             }
         } else {
