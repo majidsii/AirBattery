@@ -13,6 +13,7 @@ workspace = true
 airbattery-service = { path = "../airbattery-service", version = "=0.1.0-alpha.1" }
 device-protocols = { path = "../device-protocols", version = "=0.1.0-alpha.1" }
 diagnostics = { path = "../diagnostics", version = "=0.1.0-alpha.1" }
+futures.workspace = true
 protocol-airpods = { path = "../protocol-airpods", version = "=0.1.0-alpha.1" }
 shared-models = { path = "../shared-models", version = "=0.1.0-alpha.1" }
 thiserror.workspace = true
