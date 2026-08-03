@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "typecheck": "vue-tsc --noEmit",
+    "typecheck:contract": "tsc -p tsconfig.contract.json --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:ui": "vitest run",
     "tauri": "tauri"

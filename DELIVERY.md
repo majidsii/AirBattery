@@ -35,7 +35,7 @@ git log --oneline main..feature/hybrid-native
 - Strict dependency-free TypeScript boundary: passed.
 - GNOME JavaScript syntax checks: passed.
 - Reference checks: 4 passed.
-- Desktop source checks: 232 passed.
+- Desktop source checks: 238 passed.
 - Tauri/native source checks: 156 passed.
 - D-Bus source checks: 51 passed.
 - GNOME source checks: 63 passed.

@@ -25,6 +25,7 @@ def check(condition: bool, message: str) -> None:
 
 required = [
     DESKTOP / "package.json",
+    DESKTOP / "tsconfig.contract.json",
     DESKTOP / "index.html",
     SRC / "App.vue",
     SRC / "main.ts",
