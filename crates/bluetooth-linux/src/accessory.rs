@@ -128,8 +128,7 @@ pub async fn latest_apple_accessory_battery(address: &str) -> Option<AppleAccess
         let entries = monitors().lock().await;
         entries.get(&key).cloned()
     }?;
-    let latest = entry.latest.read().await.clone();
-    latest
+    entry.latest.read().await.clone()
 }
 
 async fn monitor_loop(
