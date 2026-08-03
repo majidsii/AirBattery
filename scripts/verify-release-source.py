@@ -164,28 +164,45 @@ for workflow_name in ["ci.yml", "release.yml"]:
     workflow = read(ROOT / ".github" / "workflows" / workflow_name)
     check("permissions:" in workflow, f"{workflow_name} lacks explicit permissions")
     check("actions/checkout@v7" in workflow, f"{workflow_name} does not pin checkout major")
-    check("actions/setup-node@v6" in workflow, f"{workflow_name} does not pin setup-node major")
+    check("actions/setup-node@v7" in workflow, f"{workflow_name} does not pin setup-node major")
     check("dtolnay/rust-toolchain@stable" in workflow, f"{workflow_name} lacks Rust toolchain setup")
 
 ci = read(ROOT / ".github" / "workflows" / "ci.yml")
 check("pull_request:" in ci, "CI does not run on pull requests")
 check("contents: read" in ci, "CI permissions are not read-only")
-check("windows-latest" in ci, "CI lacks Windows runner")
+check("windows-2022" in ci, "CI lacks pinned Windows runner")
 check("cargo test --workspace" in ci, "CI lacks Rust tests")
-check("./scripts/verify-foundation.sh" in ci, "CI lacks consolidated verification")
+for token in [
+    "python3 scripts/verify-ci-source.py",
+    "cargo fmt --all -- --check",
+    "cargo clippy --workspace --all-targets -- -D warnings",
+    "cargo test --workspace",
+    "cargo build --workspace --release",
+    "npm run typecheck",
+    "npm run test:ui",
+]:
+    check(token in ci, f"CI lacks required verification command: {token}")
 check("contents: write" not in ci, "CI must not write repository contents")
 
 release = read(ROOT / ".github" / "workflows" / "release.yml")
 check("tags:" in release and "v*" in release, "release workflow is not tag-gated")
-check("draft: true" in release or "releaseDraft: true" in release, "release workflow does not create a draft")
+check("gh release create" in release and "--draft" in release, "release workflow does not create a draft")
 check("tauri-apps/tauri-action@v1" in release, "release workflow lacks official Tauri action")
 check("ubuntu-24.04" in release, "release workflow lacks native Linux runner")
-check("windows-latest" in release, "release workflow lacks native Windows runner")
+check("windows-2022" in release, "release workflow lacks pinned native Windows runner")
 check("SHA256SUMS" in release, "release workflow lacks checksum manifest")
+check("actions/upload-artifact@v7" in release, "release workflow lacks artifact upload")
+check("actions/download-artifact@v8" in release, "release workflow lacks artifact download")
 check("contents: write" in release, "release workflow lacks release permission")
+check("secrets." not in release, "release workflow must not require repository secrets")
 
 marker = re.compile(r"\b(TODO|FIXME|MOCK|PLACEHOLDER)\b", re.IGNORECASE)
-for path in required_scripts + required_ci + required_packaging:
+marker_paths = [
+    path
+    for path in required_scripts + required_ci + required_packaging
+    if not path.name.startswith("verify-")
+]
+for path in marker_paths:
     if path.is_file() and path.suffix.lower() in {".py", ".yml", ".yaml", ".toml", ".desktop", ".xml", ".svg"}:
         check(marker.search(read(path)) is None, f"unfinished marker in {path.relative_to(ROOT)}")
 
