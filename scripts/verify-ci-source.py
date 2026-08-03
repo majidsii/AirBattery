@@ -172,6 +172,15 @@ if desktop_package_text:
     check("test:ui" not in scripts, "desktop package must not expose an empty Vitest suite")
     check("vitest" not in dev_dependencies, "desktop package must not depend on unused Vitest")
 check(
+    re.search(
+        r"TypedEventHandler::<\s*BluetoothLEAdvertisementWatcher,\s*"
+        r"BluetoothLEAdvertisementReceivedEventArgs,\s*>::new",
+        windows_bluetooth_text,
+    )
+    is not None,
+    "Windows advertisement handler must bind sender and event argument types explicitly",
+)
+check(
     "args.as_ref()" in windows_bluetooth_text,
     "Windows advertisement callback must unwrap windows_core::Ref with as_ref()",
 )
