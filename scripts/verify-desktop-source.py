@@ -68,6 +68,15 @@ about_source = (SRC / "views" / "AboutView.vue").read_text(encoding="utf-8")
 check("Exact-or-generic artwork" in about_source, "exact-or-generic artwork policy is missing from About")
 check("ATTRIBUTION.generated.json" not in about_source, "removed photo attribution is still imported")
 
+artwork_doc = (ROOT / "docs" / "DEVICE_ARTWORK_CATALOG.md").read_text(encoding="utf-8")
+check("exact-or-generic" in artwork_doc.lower(), "artwork catalog documentation does not describe the exact-or-generic policy")
+check("87 SVG files" not in artwork_doc, "artwork catalog documentation still claims the removed 87-SVG runtime catalog")
+check("registry starts empty" in artwork_doc.lower(), "artwork catalog documentation does not state the audited registry starts empty")
+
+changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+check(changelog.startswith("# Changelog"), "changelog must begin with its document title")
+check("Removed the former 87-file model-specific SVG catalog" in changelog, "changelog does not record removal of the misleading SVG catalog")
+
 
 TAURI = DESKTOP / "src-tauri"
 tauri_required = [

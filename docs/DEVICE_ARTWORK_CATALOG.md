@@ -1,57 +1,67 @@
 # Device artwork catalog
 
-AirBattery ships its device artwork locally as original SVG illustrations. Official product pages are used only as visual and naming references; no vendor raster image, downloaded SVG, logo, or trademark artwork is bundled.
+AirBattery uses an **exact-or-generic** product-artwork policy. The production registry starts empty and accepts only reviewed, model-accurate, offline 3D renders whose identity, orientation, source, license, and review date are recorded in source control.
 
-## Design rules
+## Runtime rules
 
-- Match the physical family: stem, semi-in-ear, in-ear with tip, bean, ring, clip, ear-hook, or over-ear.
-- Select by exact model name/model code first, then product family, then category fallback.
-- Keep separate `single`, `pair`, and `case` assets for every visual family.
-- Reuse one SVG family when multiple models have materially the same silhouette.
-- Never infer a battery value from artwork or model identity.
-- Keep all files self-contained vector XML; embedded PNG/JPEG assets are forbidden.
+- Resolve artwork by the exact normalized `modelKey` and exact component mode: `left`, `right`, `pair`, or `case`.
+- Never reuse a render from a similar model or hardware generation.
+- Never mirror a left-earbud asset to impersonate a right-earbud asset.
+- Never download product artwork at runtime.
+- Never ship AI-generated approximations, unreviewed product photographs, or the former model-specific SVG drawings as exact product imagery.
+- When an exact reviewed asset is unavailable, display a small neutral category glyph for earbuds, headsets, speakers, mice, keyboards, controllers, styluses, or generic Bluetooth devices.
 
-## Official reference pages
+## Audited registry
 
-- Apple AirPods compare: https://www.apple.com/airpods/compare/
-- Apple AirPods and charging-case identification: https://support.apple.com/109525
-- QCY current product catalog: https://www.qcy.com/
-- QCY support model index: https://www.qcy.com/de/pages/support-center-arcbuds
-- Xiaomi global TWS catalog: https://www.mi.com/global/product-list/tws-earphones/
-- Soundcore true-wireless catalog: https://www.soundcore.com/collections/true-wireless-earbuds
-- Samsung Galaxy Buds catalog: https://www.samsung.com/us/mobile/audio/headphones/galaxy-buds/
-- Sony truly-wireless catalog: https://electronics.sony.com/audio/headphones/truly-wireless-earbuds/c/truly-wireless-earbuds
-- JBL wireless earbuds: https://www.jbl.com/wireless-earbuds/
-- Google Pixel Buds: https://store.google.com/category/earbuds
-- Nothing audio: https://nothing.tech/collections/audio
-- OnePlus audio: https://www.oneplus.com/audio
-- Huawei audio: https://consumer.huawei.com/en/headphones/
-- Beats earbuds: https://www.beatsbydre.com/earbuds
+The registry is defined in:
 
-## Current visual families
+```text
+apps/desktop/src/domain/pre-rendered-artwork.ts
+```
 
-The catalog contains 29 original visual families and 87 SVG files:
+The audited registry starts empty. This is deliberate: a generic glyph is more truthful than an inaccurate product image.
 
-- Apple: classic AirPods, short-stem AirPods, AirPods Pro, AirPods Pro 3, AirPods Max.
-- QCY: stem, half-in-ear/open, bean/round, Crossky clip/open-ear, H-series over-ear.
-- Xiaomi/Redmi: semi-in-ear and stem families.
-- Soundcore: stem, round, and ear-hook/open-ear.
-- Samsung: bean, round, and blade/stem.
-- Sony: round and ring/open.
-- JBL: stem and round.
-- Google Pixel Buds, Nothing Ear, OnePlus Buds, Huawei FreeBuds/FreeClip, and Beats round/wing families.
+Every accepted entry must include:
 
-## QCY model coverage
+```ts
+{
+  src: string;
+  modelKey: string;
+  mode: 'left' | 'right' | 'pair' | 'case';
+  license: string;
+  author: string;
+  source: string;
+  reviewedAt: 'YYYY-MM-DD';
+  renderMethod: 'offline-3d';
+}
+```
 
-Exact aliases include:
+## Asset layout
 
-- MeloBuds N70, N60, Pro, A30, N20, N50, N65, Neo, and ANC.
-- T13, T13 Pro, T13 ANC, T13 ANC 2, T13X, and T17.
-- AilyBuds Pro+, E10, and Clear; QCY Air.
-- ArcBuds, ArcBuds Lite, QCY Buds, and QCY Buds ANC.
-- Crossky C10, C30, C30S, C50, R70, Link, and GTR2.
-- H2 Pro, H3, H3 Lite, H3 Pro, and H3S.
-- Heroad/V200/VT200 families use the QCY over-ear artwork family.
-- QCY speakers and watches are deliberately excluded from earbud artwork matching.
+Approved assets should be grouped by exact commercial model:
 
-Unknown or renamed QCY models still fall back to the closest QCY family instead of a generic Bluetooth icon.
+```text
+apps/desktop/src/assets/device-artwork/reviewed/<model-key>/
+  left.webp
+  right.webp
+  pair.webp
+  case.webp
+```
+
+A model does not need every mode, but the UI falls back to the neutral category glyph for any missing mode. It must not borrow another mode or model.
+
+## Review gate
+
+Before registration, verify all of the following:
+
+- exact product and hardware generation;
+- silhouette, vents, stems, tips, sensors, hinge, and case geometry;
+- correct left/right orientation;
+- one consistent camera, scale, light rig, and neutral color treatment;
+- transparent edges at normal and high-DPI scale;
+- no text, watermark, invented logo, or AI approximation;
+- redistribution rights recorded in repository metadata;
+- visual review in light and dark themes;
+- battery values remain more prominent than product artwork.
+
+The full authoring and review process is documented in [`ARTWORK_PIPELINE.md`](ARTWORK_PIPELINE.md).
