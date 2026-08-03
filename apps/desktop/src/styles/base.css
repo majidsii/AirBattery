@@ -304,16 +304,16 @@ input:checked + .toggle span { transform: translateX(18px); }
 .device-battery-panel.layout-single { grid-template-columns: minmax(0, 1fr); }
 .device-battery-slot {
   position: relative; display: grid; justify-items: center; align-content: center;
-  min-height: 278px; padding: 22px; overflow: hidden; isolation: isolate;
+  min-height: 228px; padding: 20px; overflow: hidden; isolation: isolate;
 }
 .device-battery-slot::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
-  background: radial-gradient(circle at 50% 32%, var(--accent-soft), transparent 58%);
-  opacity: .78;
+  background: radial-gradient(circle at 50% 38%, var(--accent-soft), transparent 66%);
+  opacity: .44;
 }
-.device-battery-slot__label { margin: 0 0 5px; font-size: 14px; font-weight: 720; color: var(--text-secondary); }
-.device-battery-slot__value-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-.device-battery-slot__value-row strong { font-size: 30px; line-height: 1; letter-spacing: -.05em; }
+.device-battery-slot__label { margin: 0 0 8px; font-size: 13px; font-weight: 720; color: var(--text-secondary); }
+.device-battery-slot__value-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.device-battery-slot__value-row strong { font-size: 38px; line-height: 1; letter-spacing: -.055em; }
 .device-battery-slot__charging { color: var(--positive); font-size: 25px; line-height: 1; }
 .device-battery-slot__status { margin: 7px 0 0; color: var(--text-secondary); font-size: 12px; }
 .device-battery-slot.tone-warning .device-battery-slot__value-row { color: var(--warning); }
@@ -322,8 +322,8 @@ input:checked + .toggle span { transform: translateX(18px); }
 .device-battery-slot.tone-stale .device-battery-slot__value-row { color: var(--stale); }
 .device-battery-slot.tone-unavailable { opacity: .72; }
 
-.device-artwork { width: min(190px, 100%); height: 142px; display: grid; place-items: center; color: var(--accent); }
-.device-artwork svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 14px 17px rgba(0, 0, 0, .23)); }
+.device-artwork { width: min(148px, 100%); height: 104px; display: grid; place-items: center; color: var(--accent); }
+.device-artwork svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .16)); }
 .device-artwork__catalog-asset { width: 100%; height: 100%; object-fit: contain; overflow: visible; image-rendering: auto; }
 .device-artwork__pre-rendered { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .18)); }
 .device-artwork__generic-fallback { opacity: .56; }
@@ -347,9 +347,9 @@ input:checked + .toggle span { transform: translateX(18px); }
 .battery-page--compact .battery-header h1 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px !important; letter-spacing: -.015em; }
 .battery-page--compact .device-meta { margin: 0 0 10px; }
 .device-battery-panel.is-compact { gap: 9px; }
-.device-battery-panel.is-compact .device-battery-slot { min-height: 178px; padding: 12px; border-radius: 22px; }
-.device-battery-panel.is-compact .device-artwork { height: 92px; width: 128px; }
-.device-battery-panel.is-compact .device-battery-slot__value-row strong { font-size: 23px; }
+.device-battery-panel.is-compact .device-battery-slot { min-height: 156px; padding: 12px; border-radius: 22px; }
+.device-battery-panel.is-compact .device-artwork { height: 70px; width: 104px; }
+.device-battery-panel.is-compact .device-battery-slot__value-row strong { font-size: 26px; }
 .device-battery-panel.is-compact .device-battery-slot__status { display: none; }
 .device-battery-panel.is-compact .device-battery-slot__label { font-size: 12px; }
 .widget-shell .app-content { overflow: hidden; }
@@ -359,8 +359,8 @@ input:checked + .toggle span { transform: translateX(18px); }
   .app-nav__primary, .app-nav__footer { flex-direction: row; flex: 0 0 auto; margin: 0; }
   .app-nav__footer { margin-left: auto; }
   .device-battery-panel.layout-splitThree { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .device-battery-slot { min-height: 220px; padding: 14px 8px; }
-  .device-artwork { height: 108px; }
+  .device-battery-slot { min-height: 198px; padding: 14px 8px; }
+  .device-artwork { height: 88px; }
 }
 @media (max-width: 560px) {
   .device-battery-panel.layout-splitThree, .device-battery-panel.layout-splitTwo { grid-template-columns: 1fr; }
