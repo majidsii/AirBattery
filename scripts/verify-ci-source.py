@@ -19,6 +19,7 @@ DEPENDABOT_PATH = ROOT / ".github/dependabot.yml"
 DENY_PATH = ROOT / "deny.toml"
 DESKTOP_PACKAGE_PATH = ROOT / "apps/desktop/package.json"
 WINDOWS_BLUETOOTH_PATH = ROOT / "crates/bluetooth-windows/src/lib.rs"
+WINDOWS_BLUETOOTH_CARGO_PATH = ROOT / "crates/bluetooth-windows/Cargo.toml"
 errors: list[str] = []
 checks = 0
 
@@ -89,6 +90,7 @@ dependabot_text = require(DEPENDABOT_PATH)
 deny_text = require(DENY_PATH)
 desktop_package_text = require(DESKTOP_PACKAGE_PATH)
 windows_bluetooth_text = require(WINDOWS_BLUETOOTH_PATH)
+windows_bluetooth_cargo_text = require(WINDOWS_BLUETOOTH_CARGO_PATH)
 ci = load_yaml(ci_text, "CI")
 release = load_yaml(release_text, "release")
 
@@ -189,8 +191,29 @@ check(
     "Windows advertisement callback must not use the pre-0.62 Option reference signature",
 )
 check(
-    "tokio::task::block_in_place(|| collect_advertisements(window))" in windows_bluetooth_text,
-    "Windows advertisement scan must isolate non-Send WinRT handlers from async suspension",
+    "tokio::task::spawn_blocking(move ||" in windows_bluetooth_text,
+    "Windows backend must isolate non-Send WinRT work on a blocking worker",
+)
+check(
+    "futures::executor::block_on(native::collect_devices(discovery_window))"
+    in windows_bluetooth_text,
+    "Windows worker must drive the complete WinRT collection future",
+)
+check(
+    "futures.workspace = true" in windows_bluetooth_cargo_text,
+    "Windows Bluetooth crate must enable the futures executor",
+)
+check(
+    "assert_send(collect_devices(None));" in windows_bluetooth_text,
+    "Windows collection API must compile-check as a Send future",
+)
+check(
+    "tokio::task::block_in_place" not in windows_bluetooth_text,
+    "Windows Bluetooth backend must not retain nested block_in_place calls",
+)
+check(
+    "Some(window) => collect_advertisements(window)?" in windows_bluetooth_text,
+    "Windows worker must call the synchronous advertisement helper directly",
 )
 check(
     "async fn collect_advertisements(" not in windows_bluetooth_text,
