@@ -179,7 +179,7 @@ for token in [
     "cargo test --workspace",
     "cargo build --workspace --release",
     "npm run typecheck",
-    "npm run test:ui",
+    "npm run test",
 ]:
     check(token in ci, f"CI lacks required verification command: {token}")
 check("contents: write" not in ci, "CI must not write repository contents")

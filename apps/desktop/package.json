@@ -9,7 +9,6 @@
     "typecheck": "vue-tsc --noEmit",
     "typecheck:contract": "tsc -p tsconfig.contract.json --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "test:ui": "vitest run",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -24,7 +23,6 @@
     "@vue/test-utils": "2.4.11",
     "typescript": "6.0.3",
     "vite": "8.1.5",
-    "vitest": "4.1.10",
     "vue-tsc": "3.3.8"
   },
   "engines": {

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 import tomllib
@@ -16,6 +17,8 @@ CI_PATH = ROOT / ".github/workflows/ci.yml"
 RELEASE_PATH = ROOT / ".github/workflows/release.yml"
 DEPENDABOT_PATH = ROOT / ".github/dependabot.yml"
 DENY_PATH = ROOT / "deny.toml"
+DESKTOP_PACKAGE_PATH = ROOT / "apps/desktop/package.json"
+WINDOWS_BLUETOOTH_PATH = ROOT / "crates/bluetooth-windows/src/lib.rs"
 errors: list[str] = []
 checks = 0
 
@@ -84,6 +87,8 @@ ci_text = require(CI_PATH)
 release_text = require(RELEASE_PATH)
 dependabot_text = require(DEPENDABOT_PATH)
 deny_text = require(DENY_PATH)
+desktop_package_text = require(DESKTOP_PACKAGE_PATH)
+windows_bluetooth_text = require(WINDOWS_BLUETOOTH_PATH)
 ci = load_yaml(ci_text, "CI")
 release = load_yaml(release_text, "release")
 
@@ -145,7 +150,6 @@ for token in (
     "cargo build --workspace --release",
     "npm run typecheck",
     "npm run test",
-    "npm run test:ui",
     "npm run build",
     "python3 scripts/verify-ci-source.py",
     "python3 scripts/verify-release-source.py",
@@ -160,6 +164,21 @@ check(
 check("cargo deny check" in ci_text, "cargo-deny audit missing")
 check('rust-version: "1.97.1"' in ci_text, "cargo-deny Rust version pin missing")
 check("npm audit" in ci_text, "npm audit missing")
+check("npm run test:ui" not in ci_text, "CI must not run Node test suites through Vitest")
+if desktop_package_text:
+    desktop_package = json.loads(desktop_package_text)
+    scripts = desktop_package.get("scripts", {})
+    dev_dependencies = desktop_package.get("devDependencies", {})
+    check("test:ui" not in scripts, "desktop package must not expose an empty Vitest suite")
+    check("vitest" not in dev_dependencies, "desktop package must not depend on unused Vitest")
+check(
+    "args.as_ref()" in windows_bluetooth_text,
+    "Windows advertisement callback must unwrap windows_core::Ref with as_ref()",
+)
+check(
+    "&Option<BluetoothLEAdvertisementReceivedEventArgs>" not in windows_bluetooth_text,
+    "Windows advertisement callback must not use the pre-0.62 Option reference signature",
+)
 check("contents: write" not in ci_text, "CI workflow must not request contents write")
 check("pull-requests: write" not in ci_text, "CI workflow must not request pull-request write")
 

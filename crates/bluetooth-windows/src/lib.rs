@@ -204,18 +204,15 @@ mod native {
             .map_err(native_error)?;
         let captured = Arc::new(Mutex::new(Vec::new()));
         let callback_values = Arc::clone(&captured);
-        let handler = TypedEventHandler::new(
-            move |_sender: &Option<BluetoothLEAdvertisementWatcher>,
-                  args: &Option<BluetoothLEAdvertisementReceivedEventArgs>| {
-                if let Some(args) = args
-                    && let Some(value) = advertisement_from_event(args)
-                    && let Ok(mut values) = callback_values.lock()
-                {
-                    values.push(value);
-                }
-                Ok(())
-            },
-        );
+        let handler = TypedEventHandler::new(move |_sender, args| {
+            if let Some(args) = args.as_ref()
+                && let Some(value) = advertisement_from_event(args)
+                && let Ok(mut values) = callback_values.lock()
+            {
+                values.push(value);
+            }
+            Ok(())
+        });
         let token = watcher.Received(&handler).map_err(native_error)?;
         watcher.Start().map_err(native_error)?;
         tokio::time::sleep(window).await;

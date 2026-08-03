@@ -106,9 +106,6 @@ jobs:
       - name: Run contract tests
         run: npm run test
 
-      - name: Run UI tests
-        run: npm run test:ui
-
       - name: Build frontend
         run: npm run build
 
