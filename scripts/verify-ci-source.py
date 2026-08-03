@@ -134,6 +134,10 @@ check("actions/cache@v5" in ci_uses, "CI must use actions/cache@v5")
 check(not any(re.search(r"@(main|master|latest)$", use) for use in ci_uses), "CI action references must not use mutable branches")
 check(not any(use.startswith("actions/upload-artifact") for use in ci_uses), "CI validation must not upload release artifacts")
 
+for workflow_name, workflow_text in (("CI", ci_text), ("release", release_text)):
+    check("PyYAML==6.0.3" in workflow_text, f"{workflow_name} workflow must install pinned PyYAML")
+    check("Pillow==12.3.0" in workflow_text, f"{workflow_name} workflow must install pinned Pillow")
+
 for token in (
     "cargo fmt --all -- --check",
     "cargo clippy --workspace --all-targets -- -D warnings",
