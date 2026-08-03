@@ -92,7 +92,7 @@ pub async fn sync_apple_accessory_monitors(
         .collect::<Vec<_>>();
     for address in stale {
         if let Some(entry) = entries.remove(&address) {
-            let _result = entry.shutdown.send(true);
+            let _ = entry.shutdown.send(true);
         }
     }
 
@@ -106,6 +106,15 @@ pub async fn sync_apple_accessory_monitors(
             monitor_loop(address, entry, receiver).await;
         });
     }
+}
+
+/// Stops all active Apple accessory monitors and releases their retry loops.
+pub async fn stop_apple_accessory_monitors() {
+    let mut entries = monitors().lock().await;
+    for entry in entries.values() {
+        let _ = entry.shutdown.send(true);
+    }
+    entries.clear();
 }
 
 /// Returns the latest exact battery packet captured for `address`.

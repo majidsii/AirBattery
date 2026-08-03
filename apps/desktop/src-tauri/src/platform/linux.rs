@@ -8,7 +8,7 @@ use std::{
 use airbattery_service::DeviceDescriptor;
 use bluetooth_linux::{
     BluezDeviceSnapshot, LinuxBluetoothBackend, latest_apple_accessory_battery, map_bluez_snapshot,
-    sync_apple_accessory_monitors,
+    stop_apple_accessory_monitors, sync_apple_accessory_monitors,
 };
 use device_protocols::{RawObservation, VendorProtocol};
 use diagnostics::sanitize_identifier;
@@ -29,6 +29,7 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
         Ok(backend) => backend,
         Err(error) => {
             tracing::warn!(error = %error, "BlueZ session is unavailable");
+            stop_apple_accessory_monitors().await;
             return Ok(unavailable(
                 "BlueZ is unavailable or no Bluetooth adapter was found.",
             ));
@@ -38,6 +39,7 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
         Ok(status) => status,
         Err(error) => {
             tracing::warn!(error = %error, "BlueZ adapter status query failed");
+            stop_apple_accessory_monitors().await;
             return Ok(unavailable(
                 "The Bluetooth adapter status could not be read.",
             ));
@@ -48,6 +50,7 @@ pub async fn collect(mode: RefreshMode) -> Result<PlatformCollection, CommandErr
         Ok(values) => index_snapshots(values),
         Err(error) => {
             tracing::warn!(error = %error, "BlueZ known-device query failed");
+            stop_apple_accessory_monitors().await;
             return Ok(PlatformCollection {
                 status: BackendStatus {
                     platform: PlatformKind::Linux,
