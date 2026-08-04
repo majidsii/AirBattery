@@ -95,6 +95,59 @@ fn select_active_device<'a>(
         .or_else(|| devices.first())
 }
 
+#[cfg(target_os = "windows")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TrayIconState {
+    Percentage(u8),
+    Unavailable,
+    Disconnected,
+}
+
+#[cfg(target_os = "windows")]
+fn is_active_device(device: &BluetoothAudioDevice) -> bool {
+    matches!(
+        device.connection_state,
+        ConnectionState::Connected | ConnectionState::Connecting
+    ) || has_live_accessory_evidence(device)
+}
+
+#[cfg(target_os = "windows")]
+fn has_critical_active_component(devices: &[BluetoothAudioDevice]) -> bool {
+    devices
+        .iter()
+        .filter(|device| is_active_device(device))
+        .any(|device| {
+            device.components.iter().any(|component| {
+                !component.stale
+                    && component
+                        .percentage
+                        .is_some_and(|percentage| percentage.get() <= 10)
+            })
+        })
+}
+
+#[cfg(target_os = "windows")]
+fn tray_icon_state(
+    devices: &[BluetoothAudioDevice],
+    preferred_device_id: Option<&str>,
+    snapshot: Option<&TraySnapshot>,
+) -> TrayIconState {
+    if has_critical_active_component(devices) {
+        return TrayIconState::Percentage(0);
+    }
+
+    let Some(device) = select_active_device(devices, preferred_device_id) else {
+        return TrayIconState::Unavailable;
+    };
+    if !is_active_device(device) {
+        return TrayIconState::Disconnected;
+    }
+
+    snapshot
+        .and_then(|snapshot| snapshot.icon_percentage)
+        .map_or(TrayIconState::Unavailable, TrayIconState::Percentage)
+}
+
 /// Selects the preferred or connected device and builds a truthful tray summary.
 #[must_use]
 pub fn tray_snapshot(
@@ -188,6 +241,8 @@ pub fn update_snapshot(
         return Ok(());
     };
     let snapshot = tray_snapshot(devices, preferred_device_id);
+    #[cfg(target_os = "windows")]
+    let icon_state = tray_icon_state(devices, preferred_device_id, snapshot.as_ref());
     let tooltip = snapshot.as_ref().map_or_else(
         || "AirBattery · battery data unavailable".to_owned(),
         |snapshot| format!("AirBattery · {} · {}", snapshot.device_name, snapshot.label),
@@ -196,12 +251,11 @@ pub fn update_snapshot(
 
     #[cfg(target_os = "windows")]
     {
-        let pixels = snapshot
-            .and_then(|snapshot| snapshot.icon_percentage)
-            .map_or_else(
-                tray_icon::render_unavailable_icon,
-                tray_icon::render_percentage_icon,
-            );
+        let pixels = match icon_state {
+            TrayIconState::Percentage(percentage) => tray_icon::render_percentage_icon(percentage),
+            TrayIconState::Unavailable => tray_icon::render_unavailable_icon(),
+            TrayIconState::Disconnected => tray_icon::render_disconnected_icon(),
+        };
         let image = tauri::image::Image::new_owned(pixels, 32, 32);
         tray.set_icon(Some(image))?;
     }

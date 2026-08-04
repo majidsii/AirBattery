@@ -1,27 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">AirBattery application icon</title>
-  <desc id="desc">A rounded translucent tile with a battery and radio signal symbol.</desc>
+  <desc id="desc">A slim white vertical battery with a centered Bluetooth mark on a dark liquid-glass tile.</desc>
   <defs>
-    <linearGradient id="surface" x1="72" y1="54" x2="440" y2="458" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#effaff"/>
-      <stop offset="0.48" stop-color="#7ed7ff"/>
-      <stop offset="1" stop-color="#4868e8"/>
+    <linearGradient id="glass" x1="78" y1="56" x2="432" y2="458" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#344a61"/>
+      <stop offset="0.38" stop-color="#1b2b3d"/>
+      <stop offset="1" stop-color="#09131f"/>
     </linearGradient>
-    <linearGradient id="charge" x1="188" y1="178" x2="331" y2="338" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#d9f7ff"/>
+    <radialGradient id="ambient" cx="0" cy="0" r="1" gradientTransform="translate(154 102) rotate(42) scale(350 302)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#b8d9f4" stop-opacity=".22"/>
+      <stop offset=".5" stop-color="#6d9bc4" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#0a111a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="70" y1="55" x2="435" y2="462" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity=".48"/>
+      <stop offset=".42" stop-color="#dceeff" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#8db2d3" stop-opacity=".07"/>
     </linearGradient>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
-      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#18347c" flood-opacity="0.28"/>
+    <linearGradient id="topSheen" x1="92" y1="65" x2="365" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity=".20"/>
+      <stop offset=".58" stop-color="#ffffff" stop-opacity=".045"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="tileClip">
+      <rect x="36" y="36" width="440" height="440" rx="108"/>
+    </clipPath>
+    <filter id="tileShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="26" flood-color="#000814" flood-opacity=".46"/>
+    </filter>
+    <filter id="markGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation=".9" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <rect x="36" y="36" width="440" height="440" rx="112" fill="url(#surface)" filter="url(#shadow)"/>
-  <path d="M102 165c40-47 94-73 154-73s114 26 154 73" fill="none" stroke="#fff" stroke-opacity="0.74" stroke-width="22" stroke-linecap="round"/>
-  <path d="M139 202c30-33 70-50 117-50s87 17 117 50" fill="none" stroke="#fff" stroke-opacity="0.9" stroke-width="22" stroke-linecap="round"/>
-  <rect x="151" y="215" width="210" height="150" rx="44" fill="#16387d" fill-opacity="0.82" stroke="#fff" stroke-opacity="0.68" stroke-width="10"/>
-  <rect x="361" y="259" width="25" height="62" rx="12.5" fill="#16387d" fill-opacity="0.82"/>
-  <rect x="176" y="240" width="122" height="100" rx="28" fill="url(#charge)"/>
-  <path d="M292 236l-47 70h37l-17 51 59-82h-39l7-39z" fill="#4868e8"/>
-  <circle cx="256" cy="401" r="14" fill="#fff" fill-opacity="0.88"/>
+
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#glass)" filter="url(#tileShadow)"/>
+  <g clip-path="url(#tileClip)">
+    <rect x="36" y="36" width="440" height="440" rx="108" fill="url(#ambient)"/>
+    <path d="M72 145c54-58 145-91 244-85 69 4 119 24 157 60V71c0-17-13-30-30-30H71c-17 0-30 13-30 30v132c8-20 18-40 31-58Z" fill="url(#topSheen)"/>
+  </g>
+  <rect x="41" y="41" width="430" height="430" rx="103" fill="none" stroke="url(#edge)" stroke-width="3"/>
+
+  <!-- Approved base mark: short solid terminal, slim body, smaller centered Bluetooth symbol. -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" filter="url(#markGlow)">
+    <rect x="205" y="170" width="102" height="205" rx="27" stroke-width="15"/>
+    <path d="M256 224v88m0-88 26 23-26 23 26 22-26 20m0-42-24-21m24 21-24 21" stroke-width="11"/>
+  </g>
+  <rect x="241" y="145" width="30" height="25" rx="6" fill="#ffffff" filter="url(#markGlow)"/>
 </svg>

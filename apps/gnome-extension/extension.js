@@ -12,6 +12,7 @@ import {
     effectiveConnectionState,
     componentText,
     normalizeSnapshot,
+    panelStatusTone,
     panelSummary,
     selectPanelDevice,
 } from './snapshot.js';
@@ -19,6 +20,14 @@ import {REFRESH_INTERVAL_MS, RefreshController} from './refresh-controller.js';
 import {BUS_NAME, OBJECT_PATH, SERVICE_XML} from './service.js';
 
 const AirBatteryProxy = Gio.DBusProxy.makeProxyWrapper(SERVICE_XML);
+const PANEL_STATUS_CLASSES = Object.freeze([
+    'airbattery-status-connected',
+    'airbattery-status-low',
+    'airbattery-status-critical',
+    'airbattery-status-unavailable',
+    'airbattery-status-disconnected',
+]);
+
 const EMPTY_SNAPSHOT = Object.freeze({
     schemaVersion: 1,
     generatedAt: null,
@@ -212,6 +221,15 @@ export default class AirBatteryExtension extends Extension {
         this._render();
     }
 
+
+    _setPanelStatusTone(tone) {
+        if (!this._icon)
+            return;
+        for (const className of PANEL_STATUS_CLASSES)
+            this._icon.remove_style_class_name(className);
+        this._icon.add_style_class_name(`airbattery-status-${tone}`);
+    }
+
     _selectedDevice() {
         const localPreferred = this._settings?.get_string('preferred-device-id') ?? '';
         const preferred = localPreferred || this._snapshot?.preferredDeviceId || '';
@@ -231,6 +249,9 @@ export default class AirBatteryExtension extends Extension {
             this._indicator.menu.removeAll();
             return;
         }
+
+        const tone = panelStatusTone(this._snapshot?.devices ?? [], device);
+        this._setPanelStatusTone(tone);
 
         const showPercentage = this._settings?.get_boolean('show-percentage') ?? true;
         const summary = panelSummary(device);
