@@ -109,6 +109,18 @@ def main() -> int:
         if path.is_file() and path.suffix in {".js", ".mjs", ".json", ".xml", ".css", ".sh", ".svg"}
     )
 
+    stylesheet_source = (EXTENSION / "stylesheet.css").read_text(encoding="utf-8")
+    for status_class in (
+        "airbattery-status-connected",
+        "airbattery-status-low",
+        "airbattery-status-critical",
+        "airbattery-status-unavailable",
+        "airbattery-status-disconnected",
+    ):
+        checks += 1
+        require(status_class in stylesheet_source,
+                f"GNOME status color class is missing: {status_class}", failures)
+
     source_requirements = (
         (f"BUS_NAME = '{BUS_NAME}'" in service_source, "service module has the wrong bus name"),
         (f"OBJECT_PATH = '{OBJECT_PATH}'" in service_source, "service module has the wrong object path"),
@@ -131,6 +143,10 @@ def main() -> int:
         ("selectPanelDevice" in extension_source, "extension does not select an active panel device"),
         ("this._indicator.visible = shouldShow" in extension_source,
          "extension visibility is not tied to an active device"),
+        ("panelStatusTone" in extension_source,
+         "GNOME panel does not derive the live logo status color"),
+        ("_setPanelStatusTone" in extension_source,
+         "GNOME panel does not apply status classes to the approved logo"),
     )
     checks += len(source_requirements)
     for condition, message in source_requirements:

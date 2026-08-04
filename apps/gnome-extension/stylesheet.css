@@ -15,3 +15,25 @@
 .airbattery-menu-stale {
   opacity: 0.68;
 }
+
+/* The live status is carried by the approved battery-and-Bluetooth mark itself. */
+.airbattery-panel-icon.airbattery-status-connected {
+    color: #34c759;
+}
+
+.airbattery-panel-icon.airbattery-status-low {
+    color: #ff9f0a;
+}
+
+.airbattery-panel-icon.airbattery-status-critical {
+    color: #ff453a;
+}
+
+.airbattery-panel-icon.airbattery-status-unavailable {
+    color: #8e8e93;
+}
+
+.airbattery-panel-icon.airbattery-status-disconnected {
+    color: #636366;
+    opacity: 0.62;
+}

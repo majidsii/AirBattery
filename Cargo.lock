@@ -492,6 +492,7 @@ dependencies = [
  "airbattery-service",
  "device-protocols",
  "diagnostics",
+ "futures",
  "protocol-airpods",
  "shared-models",
  "thiserror 2.0.19",

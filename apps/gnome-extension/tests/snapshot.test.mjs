@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   componentText,
   normalizeSnapshot,
+  panelStatusTone,
   panelSummary,
   selectDisplayDevice,
   selectPanelDevice,
@@ -235,4 +236,53 @@ test('passive AirPods BLE values are marked approximate in panel text', () => {
     {...approximate, componentType: 'right'},
     {...approximate, componentType: 'case', percentage: 10},
   ]})), 'L ≈70%  R ≈70%  C ≈10%');
+});
+
+
+test('panel status colors the logo by the selected device battery state', () => {
+  const component = percentage => ({
+    componentType: 'aggregate',
+    percentage,
+    stale: false,
+    chargingState: 'notCharging',
+  });
+
+  const healthy = device({id: 'healthy', components: [component(72)]});
+  const low = device({id: 'low', components: [component(18)]});
+  const critical = device({id: 'critical', components: [component(9)]});
+  const unavailable = device({id: 'unknown', components: []});
+  const disconnected = device({id: 'offline', connectionState: 'disconnected'});
+
+  assert.equal(panelStatusTone([healthy], healthy), 'connected');
+  assert.equal(panelStatusTone([low], low), 'low');
+  assert.equal(panelStatusTone([critical], critical), 'critical');
+  assert.equal(panelStatusTone([unavailable], unavailable), 'unavailable');
+  assert.equal(panelStatusTone([disconnected], disconnected), 'disconnected');
+});
+
+test('a critical active device overrides the selected device status color', () => {
+  const component = percentage => ({
+    componentType: 'aggregate',
+    percentage,
+    stale: false,
+    chargingState: 'notCharging',
+  });
+  const selected = device({id: 'selected', components: [component(82)]});
+  const critical = device({id: 'critical', components: [component(7)]});
+
+  assert.equal(panelStatusTone([selected, critical], selected), 'critical');
+});
+
+test('stale values never color the panel logo as low or critical', () => {
+  const selected = device({
+    id: 'selected',
+    components: [{
+      componentType: 'aggregate',
+      percentage: 4,
+      stale: true,
+      chargingState: 'notCharging',
+    }],
+  });
+
+  assert.equal(panelStatusTone([selected], selected), 'unavailable');
 });

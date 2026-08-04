@@ -190,6 +190,43 @@ export function compactPercentage(device) {
   return earbuds.length > 0 ? Math.min(...earbuds) : null;
 }
 
+function freshPercentages(device) {
+  const components = Array.isArray(device?.components) ? device.components : [];
+  return components
+    .filter(component => component?.stale !== true && Number.isInteger(component?.percentage))
+    .map(component => component.percentage);
+}
+
+function deviceStatusTone(device) {
+  if (effectiveConnectionState(device) !== 'connected') {
+    return 'disconnected';
+  }
+
+  const values = freshPercentages(device);
+  if (values.length === 0) {
+    return 'unavailable';
+  }
+
+  const minimum = Math.min(...values);
+  if (minimum <= 10) return 'critical';
+  if (minimum <= 20) return 'low';
+  return 'connected';
+}
+
+/**
+ * Chooses the live logo color for the GNOME panel. A critical active device
+ * overrides the selected device so an urgent battery warning is never hidden.
+ */
+export function panelStatusTone(devices, selectedDevice) {
+  const activeDevices = Array.isArray(devices)
+    ? devices.filter(device => effectiveConnectionState(device) === 'connected')
+    : [];
+  const hasCriticalActiveDevice = activeDevices.some(device =>
+    freshPercentages(device).some(percentage => percentage <= 10));
+
+  return hasCriticalActiveDevice ? 'critical' : deviceStatusTone(selectedDevice);
+}
+
 function componentValue(components, type) {
   const component = components.find(item =>
     item?.componentType === type && item?.stale !== true && Number.isInteger(item?.percentage));

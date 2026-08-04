@@ -130,6 +130,20 @@ if (SRC / "commands.rs").is_file():
     check("gnome::publish" in commands, "native refresh does not publish a GNOME snapshot")
     check("gnome::reconcile" in commands, "settings changes do not reconcile GNOME integration")
 
+tray_icon_path = SRC / "tray_icon.rs"
+if tray_icon_path.is_file():
+    tray_icon = tray_icon_path.read_text(encoding="utf-8")
+    check("draw_status_ring" not in tray_icon, "Windows tray status must color the logo, not a ring")
+    check("draw_battery_logo(&mut rgba, status_color(percentage))" in tray_icon,
+          "Windows tray percentage state does not color the approved logo")
+    check("render_disconnected_icon" in tray_icon,
+          "Windows tray lacks a distinct disconnected logo color")
+    tray = (SRC / "tray.rs").read_text(encoding="utf-8")
+    check("has_critical_active_component" in tray,
+          "Windows tray does not preserve critical-device override behavior")
+    check("TrayIconState::Disconnected => tray_icon::render_disconnected_icon()" in tray,
+          "Windows tray does not render the disconnected logo state")
+
 accessory_path = ROOT / "crates" / "bluetooth-linux" / "src" / "accessory.rs"
 linux_platform_path = SRC / "platform" / "linux.rs"
 if accessory_path.is_file() and linux_platform_path.is_file():
