@@ -1,7 +1,11 @@
+<script setup lang="ts">
+import BrandMark from '../components/BrandMark.vue';
+</script>
+
 <template>
   <section class="page about-page" aria-labelledby="about-title">
     <div class="about-hero glass-card">
-      <div class="about-logo" aria-hidden="true">A</div>
+      <div class="about-logo" aria-hidden="true"><BrandMark decorative /></div>
       <p class="eyebrow">Local-first Bluetooth battery monitoring</p>
       <h1 id="about-title">AirBattery</h1>
       <p class="about-version">Version 0.1.0-alpha.1</p>

@@ -9,5 +9,5 @@ Terminal=false
 Categories=Utility;AudioVideo;
 Keywords=Bluetooth;Battery;AirPods;Headphones;Earbuds;
 StartupNotify=true
-StartupWMClass=airbattery
+StartupWMClass=io.github.airbattery.airbattery
 X-GNOME-UsesNotifications=true

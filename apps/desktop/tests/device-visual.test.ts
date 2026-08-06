@@ -187,3 +187,12 @@ test('older backends infer model-aware artwork for QCY and other major brands', 
     assert.equal(selectDeviceArtwork(device({ displayName, deviceFamily: 'earbuds', visual: undefined })), expected);
   }
 });
+
+
+test('JBL PartyBox models use the speaker fallback rather than earbud artwork', () => {
+  assert.equal(selectDeviceArtwork(device({
+    displayName: 'JBL PartyBox Club 120',
+    deviceFamily: 'unknown',
+    visual: undefined,
+  })), 'speaker-generic');
+});

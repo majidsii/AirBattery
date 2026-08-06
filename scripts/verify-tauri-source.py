@@ -12,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TAURI = ROOT / "apps" / "desktop" / "src-tauri"
 SRC = TAURI / "src"
+LINUX_DESKTOP = ROOT / "packaging" / "linux" / "io.github.airbattery.airbattery.desktop"
+LINUX_DESKTOP_INSTALLER = ROOT / "scripts" / "install-linux-desktop-integration.sh"
 errors: list[str] = []
 checks = 0
 
@@ -41,6 +43,8 @@ required = [
     SRC / "platform" / "mod.rs",
     SRC / "platform" / "linux.rs",
     SRC / "platform" / "windows.rs",
+    LINUX_DESKTOP,
+    LINUX_DESKTOP_INSTALLER,
 ]
 for path in required:
     check(path.is_file(), f"missing Tauri source: {path.relative_to(ROOT)}")
@@ -75,6 +79,30 @@ for json_path in [TAURI / "tauri.conf.json", TAURI / "capabilities" / "default.j
         except Exception as error:  # noqa: BLE001
             errors.append(f"invalid JSON in {json_path.relative_to(ROOT)}: {error}")
             checks += 1
+
+if (TAURI / "tauri.conf.json").is_file():
+    tauri_config = json.loads((TAURI / "tauri.conf.json").read_text(encoding="utf-8"))
+    check(
+        tauri_config.get("app", {}).get("enableGTKAppId") is True,
+        "Linux windows must expose the canonical GTK app id for dock matching",
+    )
+
+if LINUX_DESKTOP.is_file():
+    linux_desktop = LINUX_DESKTOP.read_text(encoding="utf-8")
+    check("Icon=io.github.airbattery.airbattery" in linux_desktop,
+          "Linux desktop launcher does not use the canonical icon id")
+    check("StartupWMClass=io.github.airbattery.airbattery" in linux_desktop,
+          "Linux desktop launcher does not match the canonical GTK app id")
+
+if LINUX_DESKTOP_INSTALLER.is_file():
+    installer = LINUX_DESKTOP_INSTALLER.read_text(encoding="utf-8")
+    check('APP_ID="io.github.airbattery.airbattery"' in installer and
+          'DESKTOP_TARGET="$APPLICATIONS_DIR/$APP_ID.desktop"' in installer,
+          "Linux desktop integration installer uses the wrong desktop id")
+    check("for alias in AirBattery airbattery" in installer and "NoDisplay=true" in installer,
+          "Linux desktop integration installer lacks hidden compatibility aliases")
+    check("gtk-update-icon-cache" in installer,
+          "Linux desktop integration installer does not refresh the icon cache")
 
 check("airbattery-dbus" in (TAURI / "Cargo.toml").read_text(encoding="utf-8"), "Linux D-Bus dependency missing")
 workspace_cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))

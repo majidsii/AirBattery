@@ -3,9 +3,23 @@
   --font-ui: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --glass-opacity: 0.78;
-  --bg: #eef2f7;
-  --bg-deep: #dce4ef;
-  --text: #111823;
+  --canvas: #f4f4f5;
+  --canvas-deep: #ffffff;
+  --surface-rgb: 255, 255, 255;
+  --surface-solid-rgb: 247, 248, 250;
+  --wave-fill: 255, 255, 255;
+  --wave-edge: 184, 184, 188;
+  --wave-shadow: 73, 83, 99;
+  --wave-fill-opacity: 0.90;
+  --wave-top-opacity: 0.72;
+  --wave-bottom-opacity: 0.82;
+  --wave-line-opacity: 0.18;
+  --wave-line-primary-opacity: 0.28;
+  --wave-line-soft-opacity: 0.11;
+  --wave-shadow-opacity: 0.10;
+  --bg: var(--canvas);
+  --bg-deep: var(--canvas-deep);
+  --text: #11161e;
   --text-secondary: #5c6878;
   --text-tertiary: #7d8999;
   --glass: rgba(255, 255, 255, var(--glass-opacity));
@@ -43,9 +57,23 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #0e1116;
-  --bg-deep: #080a0e;
-  --text: #f3f6fa;
+  --canvas: #090909;
+  --canvas-deep: #000000;
+  --surface-rgb: 18, 22, 29;
+  --surface-solid-rgb: 19, 23, 30;
+  --wave-fill: 0, 0, 0;
+  --wave-edge: 46, 46, 48;
+  --wave-shadow: 0, 0, 0;
+  --wave-fill-opacity: 0.82;
+  --wave-top-opacity: 0.78;
+  --wave-bottom-opacity: 0.90;
+  --wave-line-opacity: 0.34;
+  --wave-line-primary-opacity: 0.52;
+  --wave-line-soft-opacity: 0.20;
+  --wave-shadow-opacity: 0.42;
+  --bg: var(--canvas);
+  --bg-deep: var(--canvas-deep);
+  --text: #f2f4f7;
   --text-secondary: #a7b0bd;
   --text-tertiary: #7f8997;
   --glass: rgba(24, 29, 37, var(--glass-opacity));
@@ -69,9 +97,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e1116;
-    --bg-deep: #080a0e;
-    --text: #f3f6fa;
+    --canvas: #090909;
+    --canvas-deep: #000000;
+    --surface-rgb: 18, 22, 29;
+    --surface-solid-rgb: 19, 23, 30;
+    --wave-fill: 0, 0, 0;
+    --wave-edge: 46, 46, 48;
+    --wave-shadow: 0, 0, 0;
+    --wave-fill-opacity: 0.82;
+    --wave-top-opacity: 0.78;
+    --wave-bottom-opacity: 0.90;
+    --wave-line-opacity: 0.34;
+    --wave-line-primary-opacity: 0.52;
+    --wave-line-soft-opacity: 0.20;
+    --wave-shadow-opacity: 0.42;
+    --bg: var(--canvas);
+    --bg-deep: var(--canvas-deep);
+    --text: #f2f4f7;
     --text-secondary: #a7b0bd;
     --text-tertiary: #7f8997;
     --glass: rgba(24, 29, 37, var(--glass-opacity));

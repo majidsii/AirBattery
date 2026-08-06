@@ -39,8 +39,12 @@ required = [
     SRC / "views" / "SettingsView.vue",
     SRC / "views" / "DiagnosticsView.vue",
     SRC / "views" / "AboutView.vue",
+    SRC / "components" / "BrandMark.vue",
     SRC / "styles" / "tokens.css",
     SRC / "styles" / "base.css",
+    SRC / "styles" / "ambient.css",
+    SRC / "styles" / "glass.css",
+    SRC / "domain" / "glass.ts",
 ]
 for path in required:
     check(path.is_file(), f"missing required desktop file: {path.relative_to(ROOT)}")
@@ -148,11 +152,84 @@ check(css.count("{") == css.count("}"), "unbalanced braces in base.css")
 check("prefers-reduced-motion" in css, "reduced-motion fallback missing")
 check(".skip-link" in css, "skip-link styling missing")
 check("@supports not (backdrop-filter" in css, "no-blur fallback missing")
-
+glass_css = (SRC / "styles" / "glass.css").read_text(encoding="utf-8")
+tokens_css = (SRC / "styles" / "tokens.css").read_text(encoding="utf-8")
+ambient_path = SRC / "styles" / "ambient.css"
+ambient_css = ambient_path.read_text(encoding="utf-8") if ambient_path.is_file() else ""
 app = (SRC / "App.vue").read_text(encoding="utf-8")
+check("--canvas: #090909" in tokens_css.lower(), "neutral black Option 2 canvas token is missing")
+check("--canvas: #f4f4f5" in tokens_css.lower(), "pearl light Option 2 canvas token is missing")
+check("--wave-fill: 0, 0, 0" in tokens_css, "dark waves are not black/graphite")
+check("--wave-fill: 255, 255, 255" in tokens_css, "light waves are not white/pearl")
+check("rgba(var(--wave-fill)" in ambient_css, "ambient waves do not use the semantic wave token")
+check("ambient-background__art--top" in app, "approved upper-right SVG ribbon is missing")
+check("ambient-background__art--bottom" in app, "approved lower-left SVG ribbon is missing")
+check(app.count("ambient-background__line") >= 8, "approved layered contour lines are missing")
+check("ambient-background__wave" not in app, "deprecated oval ambient blobs are still rendered")
+check("radial-gradient" not in ambient_css, "ambient background regressed to blurred radial blobs")
+check(
+    "inset: 0;" in ambient_css
+    and "width: 100%;" in ambient_css
+    and "height: 100%;" in ambient_css,
+    "ambient artwork does not fill the viewport responsively",
+)
+check(
+    "@media (max-width: 780px)" not in ambient_css
+    and "150vw" not in ambient_css
+    and "178vw" not in ambient_css,
+    "ambient artwork still uses breakpoint-specific geometry",
+)
+check(
+    app.count('preserveAspectRatio="none"') == 2,
+    "ambient SVG geometry is not responsive",
+)
+check(
+    "to right," in ambient_css
+    and "to left," in ambient_css
+    and ambient_css.count("transparent 88%") >= 4,
+    "ambient ribbon fade masks are missing",
+)
+check("ambient-background" not in glass_css, "ambient artwork must not live in glass.css")
+check(
+    re.search(
+        r"\.glass-shell \.app-content\s*\{[^}]*background:\s*transparent;[^}]*backdrop-filter:\s*none;",
+        glass_css,
+        re.S,
+    )
+    is not None,
+    "main content shell still hides the ambient background",
+)
+check(
+    "border-radius: 18px; color: var(--text);" in css,
+    "sidebar brand mark is not theme-aware",
+)
+check(".glass-card::before" in glass_css, "Liquid Glass specular highlight layer is missing")
+check("prefers-reduced-transparency" in glass_css, "reduced-transparency fallback is missing")
+check("data-glass-reduced=\"true\"" in glass_css, "explicit solid glass fallback is missing")
+check("--glass-popup-blur" in glass_css, "connection popup glass token is missing")
+check(".overview-header" in glass_css, "refined overview hierarchy styling is missing")
+check("scrollbar-color: transparent transparent" in glass_css,
+      "scrollbar must remain hidden until the content surface is engaged")
+check(".app-content:hover::-webkit-scrollbar-thumb" in glass_css,
+      "hover-revealed WebKit scrollbar styling is missing")
+check("::-webkit-scrollbar-button" in glass_css and "display: none" in glass_css,
+      "native scrollbar arrow buttons must be suppressed")
+
+glass_domain = (SRC / "domain" / "glass.ts").read_text(encoding="utf-8")
+check("type NamedGlassPreset" in glass_domain, "named glass presets are missing")
+check("GlassSurfaceStrengths" in glass_domain, "per-surface glass intensity is missing")
+check("GLASS_STORAGE_KEY" in glass_domain, "glass preference persistence key is missing")
+
 for view in ["BatteryView", "DevicesView", "SettingsView", "DiagnosticsView", "AboutView"]:
     check(view in app, f"{view} is not wired into App.vue")
 check("Skip to content" in app, "keyboard skip link missing")
+battery_view = (SRC / "views" / "BatteryView.vue").read_text(encoding="utf-8")
+check('class="overview-header"' in battery_view, "refined Overview header is missing")
+check("overview-hero glass-titlebar" not in battery_view,
+      "legacy giant Overview title panel is still present")
+presentation_source = (SRC / "domain" / "presentation.ts").read_text(encoding="utf-8")
+check("'partybox'" in presentation_source and "return 'speaker-generic'" in presentation_source,
+      "JBL PartyBox devices are not classified as speakers")
 
 if errors:
     print(f"desktop source checks: {len(errors)} failed / {checks} evaluated", file=sys.stderr)

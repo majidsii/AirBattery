@@ -36,16 +36,24 @@ const emptyDetail = computed(() =>
     :class="{ 'battery-page--compact': props.compact }"
     aria-labelledby="battery-title"
   >
-    <header class="page-header battery-header">
+    <header v-if="!props.compact" class="overview-header">
       <div>
-        <p v-if="!props.compact" class="eyebrow">Live batteries</p>
-        <h1 id="battery-title">
-          {{ props.compact ? (compactDevice?.displayName ?? 'AirBattery') : 'Connected batteries' }}
-        </h1>
-        <p v-if="!props.compact && displayedDevices.length > 0" class="battery-header__summary">
-          {{ displayedDevices.length }} active {{ displayedDevices.length === 1 ? 'device' : 'devices' }}
+        <p class="eyebrow">Active devices</p>
+        <h1 id="battery-title">Overview</h1>
+        <p class="overview-header__summary">
+          Truthful battery readings for connected Bluetooth devices.
         </p>
       </div>
+      <div class="overview-header__status glass-chip" aria-live="polite">
+        <span aria-hidden="true" />
+        <strong>{{ displayedDevices.length }}</strong>
+        <small>{{ displayedDevices.length === 1 ? 'active device' : 'active devices' }}</small>
+      </div>
+    </header>
+
+    <header v-else class="overview-compact-header glass-titlebar">
+      <h1 id="battery-title">{{ compactDevice?.displayName ?? 'AirBattery' }}</h1>
+      <StatusPill v-if="compactDevice" :state="effectiveConnectionState(compactDevice)" />
     </header>
 
     <div v-if="displayedDevices.length > 0" class="connected-device-list">
@@ -53,7 +61,7 @@ const emptyDetail = computed(() =>
         <article
           v-for="device in displayedDevices"
           :key="device.id"
-          class="connected-device-card glass-card"
+          class="connected-device-card glass-card liquid-surface"
         >
           <header class="connected-device-card__header">
             <div>
