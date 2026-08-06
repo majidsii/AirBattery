@@ -1,0 +1,105 @@
+/* Approved Option 2 ambient canvas.
+ * Two lightweight SVG ribbons reproduce the signed-off composition:
+ * a restrained upper-right fold and a broader lower-left wave.
+ * Light mode uses pearl-on-off-white; dark mode inverts it to black-on-graphite.
+ */
+
+body {
+  background: linear-gradient(148deg, var(--canvas), var(--canvas-deep));
+}
+
+.ambient-background {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(148deg, var(--canvas), var(--canvas-deep));
+}
+
+.ambient-background__art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  color: rgb(var(--wave-edge));
+  pointer-events: none;
+}
+
+.ambient-background__art--top {
+  opacity: var(--wave-top-opacity);
+  -webkit-mask-image: linear-gradient(
+    to left,
+    #000 0%,
+    #000 48%,
+    rgba(0, 0, 0, 0.70) 66%,
+    transparent 88%
+  );
+  mask-image: linear-gradient(
+    to left,
+    #000 0%,
+    #000 48%,
+    rgba(0, 0, 0, 0.70) 66%,
+    transparent 88%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.ambient-background__art--bottom {
+  opacity: var(--wave-bottom-opacity);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 48%,
+    rgba(0, 0, 0, 0.70) 66%,
+    transparent 88%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 48%,
+    rgba(0, 0, 0, 0.70) 66%,
+    transparent 88%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.ambient-background__shape {
+  fill: rgba(var(--wave-fill), var(--wave-fill-opacity));
+  filter: drop-shadow(0 28px 64px rgba(var(--wave-shadow), var(--wave-shadow-opacity)));
+}
+
+.ambient-background__line {
+  fill: none;
+  stroke: rgba(var(--wave-edge), var(--wave-line-opacity));
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ambient-background__line--primary {
+  stroke: rgba(var(--wave-edge), var(--wave-line-primary-opacity));
+  stroke-width: 1.35;
+}
+
+.ambient-background__line--soft {
+  stroke: rgba(var(--wave-edge), var(--wave-line-soft-opacity));
+}
+
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .ambient-background__art {
+    display: none;
+  }
+}
+
+:root[data-glass-reduced="true"] .ambient-background__art {
+  display: none;
+}

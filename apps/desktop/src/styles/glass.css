@@ -1,0 +1,1113 @@
+/* AirBattery Glass
+ *
+ * The Linux WebView cannot sample the desktop wallpaper behind a native window,
+ * so the material refracts a restrained in-app ambient field. The same tokens
+ * remain useful for native Acrylic/Mica integration on Windows.
+ */
+
+:root {
+  --glass-intensity: 0.62;
+  --glass-saturation: 145%;
+  --glass-luminance: 0.11;
+
+  --glass-main-strength: 0.56;
+  --glass-main-blur: 27px;
+  --glass-main-alpha: 0.42;
+  --glass-main-stroke: 0.34;
+  --glass-main-refraction: 0.24;
+  --glass-main-highlight: 0.24;
+
+  --glass-widget-strength: 0.66;
+  --glass-widget-blur: 31px;
+  --glass-widget-alpha: 0.38;
+  --glass-widget-stroke: 0.38;
+  --glass-widget-refraction: 0.28;
+  --glass-widget-highlight: 0.28;
+
+  --glass-popup-strength: 0.74;
+  --glass-popup-blur: 35px;
+  --glass-popup-alpha: 0.34;
+  --glass-popup-stroke: 0.42;
+  --glass-popup-refraction: 0.32;
+  --glass-popup-highlight: 0.31;
+
+  --glass-active-blur: var(--glass-main-blur);
+  --glass-active-alpha: var(--glass-main-alpha);
+  --glass-active-stroke: var(--glass-main-stroke);
+  --glass-active-refraction: var(--glass-main-refraction);
+  --glass-active-highlight: var(--glass-main-highlight);
+
+  --glass-base-rgb: 247, 250, 255;
+  --glass-panel-rgb: 232, 240, 250;
+  --glass-ink-rgb: 16, 24, 36;
+  --glass-edge: rgba(255, 255, 255, var(--glass-active-stroke));
+  --glass-specular: rgba(255, 255, 255, var(--glass-active-highlight));
+  --glass-shadow:
+    0 24px 70px rgba(20, 38, 62, 0.18),
+    0 3px 12px rgba(20, 38, 62, 0.08);
+  --glass-inner:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -1px 0 rgba(54, 83, 118, 0.07);
+
+  /* Shared material contract for every interactive control. */
+  --control-height: 42px;
+  --control-radius: 14px;
+  --control-border:
+    rgba(255, 255, 255, calc(var(--glass-active-stroke) * 0.58));
+  --control-border-hover:
+    rgba(255, 255, 255, calc(var(--glass-active-stroke) * 0.92));
+  --control-surface:
+    rgba(var(--glass-base-rgb), calc(var(--glass-active-alpha) * 0.34));
+  --control-surface-hover:
+    rgba(var(--glass-panel-rgb), calc(var(--glass-active-alpha) * 0.46));
+  --control-shadow:
+    0 10px 24px rgba(0, 8, 20, 0.14),
+    inset 0 1px 0 rgba(
+      255,
+      255,
+      255,
+      calc(var(--glass-active-highlight) * 0.72)
+    );
+  --control-motion:
+    180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme="dark"] {
+  --glass-base-rgb: 14, 24, 37;
+  --glass-panel-rgb: 31, 47, 66;
+  --glass-ink-rgb: 245, 248, 252;
+  --glass-shadow:
+    0 28px 80px rgba(0, 6, 16, 0.38),
+    0 4px 18px rgba(0, 6, 16, 0.24);
+  --glass-inner:
+    inset 0 1px 0 rgba(255, 255, 255, 0.19),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.035);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --glass-base-rgb: 14, 24, 37;
+    --glass-panel-rgb: 31, 47, 66;
+    --glass-ink-rgb: 245, 248, 252;
+    --glass-shadow:
+      0 28px 80px rgba(0, 6, 16, 0.38),
+      0 4px 18px rgba(0, 6, 16, 0.24);
+    --glass-inner:
+      inset 0 1px 0 rgba(255, 255, 255, 0.19),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.035);
+  }
+}
+
+:root[data-glass-adaptive="false"] {
+  --glass-saturation: 100%;
+}
+
+.app-shell[data-window-mode="widget"] {
+  --glass-active-blur: var(--glass-widget-blur);
+  --glass-active-alpha: var(--glass-widget-alpha);
+  --glass-active-stroke: var(--glass-widget-stroke);
+  --glass-active-refraction: var(--glass-widget-refraction);
+  --glass-active-highlight: var(--glass-widget-highlight);
+}
+
+.glass-shell {
+  isolation: isolate;
+}
+
+.glass-shell .app-content,
+.glass-shell .app-nav {
+  border: 1px solid rgba(255, 255, 255, calc(var(--glass-active-stroke) * 0.62));
+  box-shadow: var(--glass-shadow), var(--glass-inner);
+}
+
+.glass-shell .app-content {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.glass-shell .app-content:hover,
+.glass-shell .app-content:focus-within {
+  scrollbar-color: rgba(231, 240, 252, 0.24) transparent;
+}
+
+.glass-shell .app-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.glass-shell .app-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-shell .app-content::-webkit-scrollbar-thumb {
+  min-height: 52px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  background-clip: padding-box;
+  transition: background 160ms ease;
+}
+
+.glass-shell .app-content:hover::-webkit-scrollbar-thumb,
+.glass-shell .app-content:focus-within::-webkit-scrollbar-thumb {
+  background: rgba(231, 240, 252, 0.24);
+  background-clip: padding-box;
+}
+
+.glass-shell .app-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(231, 240, 252, 0.40);
+  background-clip: padding-box;
+}
+
+.glass-shell .app-content::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.glass-shell .app-nav {
+  background:
+    linear-gradient(
+      150deg,
+      rgba(255, 255, 255, calc(var(--glass-active-refraction) * 0.18)),
+      transparent 32%
+    ),
+    rgba(var(--glass-base-rgb), calc(var(--glass-active-alpha) * 0.66));
+  backdrop-filter: blur(var(--glass-active-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-active-blur)) saturate(var(--glass-saturation));
+}
+
+.glass-shell .brand-mark {
+  border-color: rgba(255, 255, 255, calc(0.22 + var(--glass-active-stroke) * 0.28));
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    rgba(var(--glass-panel-rgb), 0.32);
+  box-shadow:
+    0 13px 34px rgba(0, 8, 20, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+/* Liquid surfaces use a transparent body, a precise edge and one restrained
+   highlight. No large decorative blobs are painted inside the content cards. */
+.glass-card,
+.glass-titlebar,
+.glass-control,
+.glass-preview,
+.glass-chip {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, calc(var(--glass-active-refraction) * 0.20)),
+      transparent 26%
+    ) padding-box,
+    rgba(var(--glass-panel-rgb), calc(var(--glass-active-alpha) * 0.64)) padding-box,
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, calc(var(--glass-active-stroke) * 0.96)),
+      rgba(255, 255, 255, calc(var(--glass-active-stroke) * 0.16)) 46%,
+      rgba(122, 165, 215, calc(var(--glass-active-stroke) * 0.20))
+    ) border-box;
+  box-shadow: var(--glass-shadow), var(--glass-inner);
+  backdrop-filter: blur(var(--glass-active-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: blur(var(--glass-active-blur)) saturate(var(--glass-saturation));
+}
+
+.glass-card::before,
+.glass-titlebar::before,
+.glass-control::before,
+.glass-preview::before,
+.glass-chip::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 22% -7%, var(--glass-specular), transparent 44%),
+    linear-gradient(103deg, transparent 22%, rgba(255, 255, 255, 0.045) 49%, transparent 72%);
+  opacity: calc(0.40 + var(--glass-intensity) * 0.34);
+}
+
+.glass-card::after,
+.glass-titlebar::after,
+.glass-control::after,
+.glass-preview::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: auto 10% 0;
+  height: 1px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(148, 194, 241, 0.20), transparent);
+}
+
+/* Overview: the title is part of the window hierarchy; glass is reserved for
+   controls and device content, matching the approved desktop composition. */
+.battery-page {
+  width: min(1180px, 100%);
+}
+
+.overview-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 2px 2px 0;
+}
+
+.overview-header h1 {
+  margin: 0;
+  font-size: clamp(38px, 5vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.052em;
+}
+
+.overview-header__summary {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+}
+
+.overview-header__status {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas:
+    "dot value"
+    "dot label";
+  align-items: center;
+  column-gap: 10px;
+  min-width: 142px;
+  padding: 11px 14px;
+  border-radius: 17px;
+}
+
+.overview-header__status > span {
+  grid-area: dot;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--positive);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--positive) 13%, transparent);
+}
+
+.overview-header__status strong {
+  grid-area: value;
+  line-height: 1.1;
+}
+
+.overview-header__status small {
+  grid-area: label;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.overview-compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  border-radius: 22px;
+}
+
+.overview-compact-header h1 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: -0.035em;
+}
+
+.connected-device-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.connected-device-card {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 26px;
+  overflow: hidden;
+  transition:
+    transform var(--spring),
+    border-color var(--spring),
+    box-shadow var(--spring);
+}
+
+.connected-device-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 30px 76px rgba(0, 7, 18, 0.34),
+    var(--glass-inner);
+}
+
+.connected-device-card__header {
+  padding: 2px 2px 12px;
+}
+
+.connected-device-card__name {
+  font-size: 19px;
+  letter-spacing: -0.03em;
+}
+
+.connected-device-card .device-battery-slot {
+  min-height: 240px;
+  border-color: rgba(255, 255, 255, calc(var(--glass-active-stroke) * 0.44));
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent 32%) padding-box,
+    rgba(var(--glass-base-rgb), calc(var(--glass-active-alpha) * 0.32)) padding-box,
+    linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.025)) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.connected-device-card .device-battery-slot::before {
+  opacity: 0.18;
+}
+
+.freshness-note {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(var(--glass-base-rgb), 0.18);
+  box-shadow: none;
+  backdrop-filter: blur(calc(var(--glass-active-blur) * 0.64));
+  -webkit-backdrop-filter: blur(calc(var(--glass-active-blur) * 0.64));
+}
+
+/* Appearance controls */
+.glass-control {
+  display: grid;
+  gap: 18px;
+  margin: 6px 0 18px;
+  padding: 18px;
+  border-radius: 24px;
+}
+
+.glass-control__heading,
+.glass-range,
+.glass-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.glass-control__heading output {
+  min-width: 58px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 760;
+  text-align: center;
+}
+
+.glass-presets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.glass-preset {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  background: rgba(var(--glass-base-rgb), 0.16);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.glass-preset:hover,
+.glass-preset.active {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 42%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--accent-soft) 72%, transparent);
+}
+
+.glass-range {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1.2fr);
+}
+
+.glass-range span,
+.glass-preview div {
+  display: grid;
+  gap: 4px;
+}
+
+.glass-range small,
+.glass-preview small {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.glass-range input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.glass-surface-grid {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--stroke-muted);
+}
+
+.glass-accessibility {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Unified interactive control family.
+ * Selects, checkboxes, toggles, presets and numeric inputs share the same
+ * edge, surface, shadow, focus language and motion timing.
+ */
+.glass-select {
+  position: relative;
+  min-width: 176px;
+}
+
+.glass-select__trigger,
+.number-input,
+.glass-preset {
+  min-height: var(--control-height);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-surface);
+  box-shadow: var(--control-shadow);
+  transition:
+    border-color var(--control-motion),
+    background var(--control-motion),
+    box-shadow var(--control-motion),
+    color var(--control-motion),
+    transform var(--control-motion);
+}
+
+.glass-select__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 14px;
+  padding: 8px 13px 8px 14px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.glass-select__trigger:hover,
+.glass-select.open .glass-select__trigger,
+.number-input:hover,
+.glass-preset:hover:not(:disabled) {
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
+}
+
+.glass-select__trigger:focus-visible,
+.number-input:focus-visible,
+.glass-preset:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--focus),
+    var(--control-shadow);
+}
+
+.glass-select__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glass-select__chevron {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  transform: translateY(-1px);
+  transition:
+    color var(--control-motion),
+    transform var(--control-motion);
+}
+
+.glass-select.open .glass-select__chevron {
+  color: var(--text);
+  transform: rotate(180deg) translateY(1px);
+}
+
+.glass-select__listbox {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  min-width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  max-height: 280px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 7px;
+  border: 1px solid var(--control-border-hover);
+  border-radius: calc(var(--control-radius) + 3px);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(
+        255,
+        255,
+        255,
+        calc(var(--glass-active-refraction) * 0.20)
+      ),
+      transparent 34%
+    ),
+    rgba(
+      var(--glass-panel-rgb),
+      calc(var(--glass-active-alpha) * 0.92)
+    );
+  box-shadow:
+    var(--glass-shadow),
+    var(--glass-inner);
+  backdrop-filter:
+    blur(var(--glass-active-blur))
+    saturate(var(--glass-saturation));
+  -webkit-backdrop-filter:
+    blur(var(--glass-active-blur))
+    saturate(var(--glass-saturation));
+}
+
+.glass-select__option {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 10px 11px;
+  padding-inline-end: 44px;
+  border: 0;
+  border-radius: 11px;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color var(--control-motion),
+    background var(--control-motion);
+}
+
+.glass-select__option-copy,
+.glass-checkbox__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.glass-select__option small,
+.glass-checkbox__copy small {
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.glass-select__option.active {
+  background: rgba(var(--glass-base-rgb), 0.28);
+}
+
+.glass-select__option.selected {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.glass-select__option:focus-visible {
+  outline: none;
+  box-shadow: inset var(--focus);
+}
+
+.glass-select__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.glass-select__check {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 12px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+  line-height: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.glass-select__check-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.glass-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 66px;
+  padding: 12px 14px;
+  border: 1px solid var(--control-border);
+  border-radius: calc(var(--control-radius) + 2px);
+  background: var(--control-surface);
+  box-shadow: var(--control-shadow);
+  cursor: pointer;
+  transition:
+    border-color var(--control-motion),
+    background var(--control-motion),
+    box-shadow var(--control-motion),
+    transform var(--control-motion);
+}
+
+.glass-checkbox:hover:not(.disabled) {
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
+}
+
+.glass-checkbox:has(input:focus-visible) {
+  outline: none;
+  box-shadow:
+    var(--focus),
+    var(--control-shadow);
+}
+
+.glass-checkbox__box {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border: 1px solid var(--control-border-hover);
+  border-radius: 7px;
+  color: white;
+  background: rgba(var(--glass-base-rgb), 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  line-height: 0;
+  transition:
+    border-color var(--control-motion),
+    background var(--control-motion),
+    transform var(--control-motion);
+}
+
+.glass-checkbox__check-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transform: scale(0.72);
+  transform-origin: 50% 50%;
+  transition:
+    opacity var(--control-motion),
+    transform var(--control-motion);
+}
+
+.glass-checkbox.checked .glass-checkbox__box {
+  border-color:
+    color-mix(in srgb, var(--accent) 74%, white);
+  background: var(--accent);
+}
+
+.glass-checkbox.checked .glass-checkbox__check-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.glass-checkbox.disabled,
+.glass-select.disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+.glass-select.disabled .glass-select__trigger {
+  cursor: not-allowed;
+}
+
+/* Existing switches retain their switch geometry while using the same
+ * material and motion language as the new controls.
+ */
+.toggle {
+  border: 1px solid var(--control-border);
+  background: var(--control-surface);
+  box-shadow: var(--control-shadow);
+  transition:
+    border-color var(--control-motion),
+    background var(--control-motion),
+    box-shadow var(--control-motion);
+}
+
+.setting-row:hover:not(.disabled) .toggle {
+  border-color: var(--control-border-hover);
+  background: var(--control-surface-hover);
+}
+
+input:focus-visible + .toggle {
+  outline: none;
+  box-shadow:
+    var(--focus),
+    var(--control-shadow);
+}
+
+input:checked + .toggle {
+  border-color:
+    color-mix(in srgb, var(--accent) 70%, white);
+  background: var(--accent);
+}
+
+.number-input {
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+  color: var(--text);
+}
+
+.glass-preset {
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+}
+
+.glass-preview {
+  justify-content: flex-start;
+  min-height: 78px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.glass-preview__orb {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.90), transparent 17%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--accent) 64%, #72dccd),
+      color-mix(in srgb, var(--accent) 22%, transparent)
+    );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.68),
+    0 12px 30px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* Solid accessibility fallback */
+:root[data-glass-preset="off"] .glass-card,
+:root[data-glass-preset="off"] .glass-titlebar,
+:root[data-glass-preset="off"] .glass-control,
+:root[data-glass-preset="off"] .glass-preview,
+:root[data-glass-preset="off"] .glass-chip,
+:root[data-glass-reduced="true"] .glass-card,
+:root[data-glass-reduced="true"] .glass-titlebar,
+:root[data-glass-reduced="true"] .glass-control,
+:root[data-glass-reduced="true"] .glass-preview,
+:root[data-glass-reduced="true"] .glass-chip {
+  border-color: var(--stroke-muted);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-glass-reduced="true"] .glass-card::before,
+:root[data-glass-reduced="true"] .glass-titlebar::before,
+:root[data-glass-reduced="true"] .glass-control::before,
+:root[data-glass-reduced="true"] .glass-preview::before,
+:root[data-glass-reduced="true"] .glass-chip::before {
+  display: none;
+}
+
+:root[data-glass-reduced="true"] .glass-shell .app-content,
+:root[data-glass-reduced="true"] .glass-shell .app-nav {
+  background: var(--glass-strong);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-card,
+  .glass-titlebar,
+  .glass-control,
+  .glass-preview,
+  .glass-chip,
+  .glass-shell .app-content,
+  .glass-shell .app-nav {
+    background: var(--glass-strong);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-card,
+  .glass-titlebar,
+  .glass-control,
+  .glass-preview,
+  .glass-chip,
+  .glass-shell .app-content,
+  .glass-shell .app-nav {
+    background: var(--glass-strong);
+  }
+}
+
+@media (max-width: 760px) {
+  .overview-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .overview-header__status {
+    min-width: 0;
+  }
+
+  .glass-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .glass-range {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-accessibility {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Device management hierarchy and battery-aware brand avatars. */
+.device-sections {
+  display: grid;
+  gap: 22px;
+}
+
+.device-section {
+  display: grid;
+  gap: 12px;
+}
+
+.device-section__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 4px;
+}
+
+.device-section__heading h2,
+.device-section__heading p {
+  margin: 0;
+}
+
+.device-section__heading h2 {
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.device-section__heading p {
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.device-section__count {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding-inline: 8px;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--control-surface);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.device-section--known {
+  padding: 10px;
+  border: 1px solid var(--control-border);
+  border-radius: 22px;
+  background: rgba(var(--glass-base-rgb), 0.10);
+}
+
+.device-section__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  color: var(--text);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--control-motion),
+    transform var(--control-motion);
+}
+
+.device-section__toggle:hover {
+  background: var(--control-surface-hover);
+}
+
+.device-section__toggle:active {
+  transform: scale(0.995);
+}
+
+.device-section__toggle-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.device-section__toggle-copy small {
+  color: var(--text-secondary);
+}
+
+.device-section__toggle-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.device-section__chevron {
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  transition: transform var(--control-motion);
+}
+
+.device-section__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.device-list--known {
+  padding-top: 4px;
+}
+
+.device-active-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 86px;
+  padding: 16px 18px;
+  color: var(--text-secondary);
+}
+
+.device-active-empty .brand-mark__svg {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+}
+
+.device-active-empty strong {
+  color: var(--text);
+}
+
+.device-active-empty p {
+  margin: 3px 0 0;
+}
+
+.device-avatar {
+  position: relative;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+  color: var(--accent);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, currentColor 18%, transparent),
+      color-mix(in srgb, currentColor 6%, transparent)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 24px color-mix(in srgb, currentColor 13%, transparent);
+  transition:
+    color var(--control-motion),
+    border-color var(--control-motion),
+    background var(--control-motion),
+    opacity var(--control-motion);
+}
+
+.device-avatar .brand-mark__svg {
+  display: block;
+  width: 34px;
+  height: 34px;
+}
+
+.device-avatar--charging,
+.device-avatar--healthy {
+  color: var(--positive);
+}
+
+.device-avatar--medium {
+  color: var(--warning);
+}
+
+.device-avatar--critical {
+  color: var(--critical);
+}
+
+.device-avatar--unknown {
+  color: var(--accent);
+}
+
+.device-avatar--disconnected {
+  color: var(--text-tertiary);
+  opacity: 0.66;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.device-avatar--charging::after {
+  content: "↯";
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(var(--glass-base-rgb), 0.96);
+  border-radius: 50%;
+  color: white;
+  background: var(--positive);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 560px) {
+  .device-section__heading {
+    align-items: flex-start;
+  }
+
+  .device-section__toggle-copy small {
+    white-space: normal;
+  }
+}

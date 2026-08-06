@@ -1,13 +1,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import GlassCheckbox from '../components/GlassCheckbox.vue';
+import GlassSelect from '../components/GlassSelect.vue';
 import ToggleControl from '../components/ToggleControl.vue';
+import type { GlassSelectOption } from '../domain/glass-controls.ts';
+import { glassPresetOptions, type GlassSurface } from '../domain/glass.ts';
 import { openWidget } from '../api/backend.ts';
 import { useDeviceStore } from '../stores/devices.ts';
 import { useSettingsStore } from '../stores/settings.ts';
 
 const settings = useSettingsStore();
 const devices = useDeviceStore();
+
+const themeOptions: readonly GlassSelectOption[] = [
+  {
+    value: 'system',
+    label: 'System',
+    description: 'Follow the operating-system appearance.',
+  },
+  {
+    value: 'light',
+    label: 'Light',
+    description: 'Use the pearl light interface.',
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+    description: 'Use the neutral black interface.',
+  },
+];
 
 const platform = computed(() => devices.backendStatus?.platform ?? 'unsupported');
 const isLinux = computed(() => platform.value === 'linux');
@@ -19,9 +41,44 @@ const trayDescription = computed(() => isLinux.value
     ? 'Show AirBattery in the Windows notification area.'
     : 'Show the native status surface supported by this operating system.');
 
+const glassPresetTitle = computed(() => {
+  const preset = settings.glass.preset;
+  return preset === 'custom' ? 'Custom glass' : `${preset[0].toUpperCase()}${preset.slice(1)} glass`;
+});
+
 const hiddenDevices = computed(() =>
   devices.devices.filter((device) => settings.value.hiddenDeviceIds.includes(device.id)),
 );
+
+
+function updateGlassIntensity(event: Event): void {
+  settings.setGlassIntensity(Number((event.target as HTMLInputElement).value));
+}
+
+function updateSurface(surface: GlassSurface, event: Event): void {
+  settings.setGlassSurface(surface, Number((event.target as HTMLInputElement).value));
+}
+
+function updateTheme(value: string): void {
+  if (
+    value !== 'system'
+    && value !== 'light'
+    && value !== 'dark'
+  ) {
+    return;
+  }
+
+  settings.value.appearance.theme = value;
+  settings.applyAppearance();
+}
+
+function updateAdaptive(value: boolean): void {
+  settings.setGlassAdaptive(value);
+}
+
+function updateReduceTransparency(value: boolean): void {
+  settings.setReduceTransparency(value);
+}
 
 async function restoreDevice(deviceId: string): Promise<void> {
   settings.showDevice(deviceId);
@@ -62,16 +119,84 @@ async function restoreDevice(deviceId: string): Promise<void> {
           <span aria-hidden="true">◐</span>
           <div><h2 id="appearance-heading">Appearance</h2><p>Readable glass surfaces with system-aware fallbacks.</p></div>
         </div>
-        <label class="setting-row">
-          <span class="setting-row__copy"><strong>Theme</strong><small>Follow the system or choose a fixed appearance.</small></span>
-          <select v-model="settings.value.appearance.theme" @change="settings.applyAppearance">
-            <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
-          </select>
-        </label>
-        <label class="setting-row setting-row--range">
-          <span class="setting-row__copy"><strong>Transparency</strong><small>{{ settings.value.appearance.transparency }}%</small></span>
-          <input v-model.number="settings.value.appearance.transparency" type="range" min="35" max="95" step="1" @input="settings.applyAppearance" />
-        </label>
+        <div class="setting-row">
+          <span class="setting-row__copy">
+            <strong>Theme</strong>
+            <small>Follow the system or choose a fixed appearance.</small>
+          </span>
+          <GlassSelect
+            :model-value="settings.value.appearance.theme"
+            :options="themeOptions"
+            label="Theme"
+            @update:model-value="updateTheme"
+          />
+        </div>
+        <div class="glass-control" aria-labelledby="glass-material-heading">
+          <div class="glass-control__heading">
+            <span class="setting-row__copy">
+              <strong id="glass-material-heading">Glass material</strong>
+              <small>Choose a starting point, then tune every native surface independently.</small>
+            </span>
+            <output>{{ settings.glass.intensity }}%</output>
+          </div>
+
+          <div class="glass-presets" role="group" aria-label="Glass material preset">
+            <button
+              v-for="preset in glassPresetOptions"
+              :key="preset.value"
+              class="glass-preset"
+              :class="{ active: settings.glass.preset === preset.value }"
+              type="button"
+              :title="preset.description"
+              @click="settings.setGlassPreset(preset.value)"
+            >
+              {{ preset.label }}
+            </button>
+          </div>
+
+          <label class="glass-range glass-range--master">
+            <span><strong>Overall intensity</strong><small>Controls blur, saturation, tint, depth, and edge highlights.</small></span>
+            <input :value="settings.glass.intensity" type="range" min="0" max="100" step="1" @input="updateGlassIntensity" />
+          </label>
+
+          <div class="glass-surface-grid" aria-label="Per-surface glass intensity">
+            <label class="glass-range">
+              <span><strong>Main window</strong><small>{{ settings.glass.surfaces.main }}%</small></span>
+              <input :value="settings.glass.surfaces.main" type="range" min="0" max="100" step="1" @input="updateSurface('main', $event)" />
+            </label>
+            <label class="glass-range">
+              <span><strong>Desktop widget</strong><small>{{ settings.glass.surfaces.widget }}%</small></span>
+              <input :value="settings.glass.surfaces.widget" type="range" min="0" max="100" step="1" @input="updateSurface('widget', $event)" />
+            </label>
+            <label class="glass-range">
+              <span><strong>Connection popup</strong><small>{{ settings.glass.surfaces.popup }}%</small></span>
+              <input :value="settings.glass.surfaces.popup" type="range" min="0" max="100" step="1" @input="updateSurface('popup', $event)" />
+            </label>
+          </div>
+
+          <div class="glass-accessibility">
+            <GlassCheckbox
+              :model-value="settings.glass.adaptive"
+              label="Adaptive glass"
+              description="Balance contrast against the wallpaper and active theme."
+              @update:model-value="updateAdaptive"
+            />
+            <GlassCheckbox
+              :model-value="settings.glass.reduceTransparency"
+              label="Reduce transparency"
+              description="Use solid, high-contrast surfaces while retaining spacing and hierarchy."
+              @update:model-value="updateReduceTransparency"
+            />
+          </div>
+
+          <div class="glass-preview" aria-label="Glass material preview">
+            <span class="glass-preview__orb" aria-hidden="true" />
+            <div>
+              <strong>{{ glassPresetTitle }}</strong>
+              <small>Main {{ settings.glass.surfaces.main }} · Widget {{ settings.glass.surfaces.widget }} · Popup {{ settings.glass.surfaces.popup }}</small>
+            </div>
+          </div>
+        </div>
         <ToggleControl v-model="settings.value.appearance.compactLayout" label="Compact layout" description="Use tighter spacing in the popup and widget." />
         <ToggleControl v-model="settings.value.appearance.animations" label="Interface animations" description="Animate live updates and navigation transitions." />
         <ToggleControl v-model="settings.value.appearance.reducedMotion" label="Reduce motion" description="Disable spring and charging motion for accessibility." />

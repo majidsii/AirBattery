@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BrandMark from './BrandMark.vue';
+
 export type AppRoute = 'battery' | 'devices' | 'settings' | 'diagnostics' | 'about';
 
 const props = defineProps<{ active: AppRoute }>();
@@ -18,7 +20,7 @@ const footerItems: Array<{ route: AppRoute; label: string; glyph: string }> = [
 
 <template>
   <nav class="app-nav" aria-label="Primary navigation">
-    <div class="brand-mark" aria-label="AirBattery"><span aria-hidden="true">A</span></div>
+    <div class="brand-mark" aria-label="AirBattery"><BrandMark decorative /></div>
     <div class="app-nav__primary">
       <button
         v-for="item in primaryItems"

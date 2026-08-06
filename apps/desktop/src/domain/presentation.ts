@@ -192,6 +192,18 @@ function inferredArtworkKey(identity: string): string | null {
   if (identity.includes('wf-1000xm5')) return 'sony-wf-1000xm5';
   if (identity.includes('wf-1000xm4')) return 'sony-wf-1000xm4';
   if (identity.includes('jbl')) {
+    if (matches(
+      'partybox',
+      'boombox',
+      'xtreme',
+      'flip ',
+      'charge ',
+      'pulse ',
+      'clip ',
+      'jbl go',
+      'encore',
+      'authentics',
+    )) return 'speaker-generic';
     if (matches('jbl free truly', 'jbl free')) return 'jbl-free';
     if (identity.includes('tour pro')) return 'jbl-tour-pro';
     if (identity.includes('live beam')) return 'jbl-live-beam';

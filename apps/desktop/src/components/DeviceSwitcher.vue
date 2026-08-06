@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
+import GlassSelect from './GlassSelect.vue';
+import type { GlassSelectOption } from '../domain/glass-controls.ts';
 import type { BluetoothAudioDevice } from '../domain/types.ts';
 
 const props = defineProps<{
@@ -9,20 +13,31 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [deviceId: string];
 }>();
+
+const options = computed<readonly GlassSelectOption[]>(() =>
+  props.devices.map((device) => ({
+    value: device.id,
+    label: device.displayName,
+    description: device.connectionState,
+  })),
+);
+
+function selectDevice(deviceId: string): void {
+  if (!deviceId || deviceId === props.selectedId) return;
+
+  emit('select', deviceId);
+}
 </script>
 
 <template>
-  <label class="device-switcher">
-    <span class="sr-only">Selected Bluetooth device</span>
-    <select
-      :value="props.selectedId ?? ''"
-      :disabled="devices.length < 2"
-      @change="emit('select', ($event.target as HTMLSelectElement).value)"
-    >
-      <option v-for="device in devices" :key="device.id" :value="device.id">
-        {{ device.displayName }} · {{ device.connectionState }}
-      </option>
-    </select>
-    <span aria-hidden="true" class="device-switcher__chevron">⌄</span>
-  </label>
+  <div class="device-switcher">
+    <GlassSelect
+      :model-value="props.selectedId ?? ''"
+      :options="options"
+      label="Selected Bluetooth device"
+      :disabled="props.devices.length < 2"
+      empty-label="No Bluetooth device"
+      @update:model-value="selectDevice"
+    />
+  </div>
 </template>
